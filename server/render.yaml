@@ -11,3 +11,5 @@ services:
         generateValue: true
       - key: NODE_ENV
         value: production
+      - key: CLIENT_URL
+        value: https://your-vercel-frontend-url.vercel.app

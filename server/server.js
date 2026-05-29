@@ -18,10 +18,10 @@ connectTestDB();
 
 const app = express();
 
-// Security Headers - Disabled CSP for development
+// Security Headers - Enable CSP and HSTS in production
 app.use(helmet({
-  contentSecurityPolicy: false, // Disable CSP for development
-  hsts: false // Disable HSTS for development
+  contentSecurityPolicy: process.env.NODE_ENV === 'production',
+  hsts: process.env.NODE_ENV === 'production'
 }));
 
 // CORS Configuration
@@ -32,19 +32,19 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Rate Limiting - General API (Disabled for development)
+// Rate Limiting - General API
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Increased limit for development
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // 100 req in prod, 1000 in dev
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Rate Limiting - Auth Routes (Disabled for development)
+// Rate Limiting - Auth Routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Increased limit for development
+  max: process.env.NODE_ENV === 'production' ? 10 : 100, // 10 req in prod, 100 in dev
   message: 'Too many login attempts, please try again later.',
   skipSuccessfulRequests: true,
 });
