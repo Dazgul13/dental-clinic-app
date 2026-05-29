@@ -95,9 +95,7 @@ To populate the database with a demo clinic, 10 patients, and 10 appointments:
 node server/seed.js
 ```
 
-Demo credentials:
-- **Admin:** `admin` / `Admin123!`
-- **Staff:** `staff` / `Staff123!`
+> Credentials are printed to the console after seeding. Change them immediately after first login.
 
 ## API Endpoints
 
@@ -134,6 +132,7 @@ Demo credentials:
 | GET | `/api/organization/me` | Get clinic details |
 | PUT | `/api/organization/me` | Update clinic details (admin only) |
 | GET | `/api/organization/users` | List clinic users |
+| PUT | `/api/organization/users/:userId/role` | Update user role (promote/demote) (admin only) |
 
 ## Registration Flow
 
@@ -141,9 +140,11 @@ When a new clinic registers:
 1. Fill in clinic name, email, and phone
 2. Create an admin account (username, email, password)
 3. A new isolated organization is created
-4. All subsequent data (patients, appointments) is scoped to that organization
+4. The first account is automatically assigned admin role
+5. All subsequent data (patients, appointments) is scoped to that organization
 
-Staff accounts can be added by an admin after registration.
+Staff accounts can be added by an admin after registration through the admin panel.
+Admins can promote or demote staff members to/from admin role as needed.
 
 ## Deployment
 

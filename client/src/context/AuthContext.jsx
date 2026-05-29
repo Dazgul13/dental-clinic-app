@@ -55,46 +55,45 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async ({ username, email, password, role, organizationName, organizationEmail, organizationPhone }) => {
-    try {
-      if (!username || username.length < 3) {
-        return { success: false, message: 'Username must be at least 3 characters' };
-      }
-      if (!password || password.length < 8) {
-        return { success: false, message: 'Password must be at least 8 characters' };
-      }
-      if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-        return { 
-          success: false, 
-          message: 'Password must contain uppercase, lowercase, and number' 
-        };
-      }
+   const register = async ({ username, email, password, organizationName, organizationEmail, organizationPhone }) => {
+     try {
+       if (!username || username.length < 3) {
+         return { success: false, message: 'Username must be at least 3 characters' };
+       }
+       if (!password || password.length < 8) {
+         return { success: false, message: 'Password must be at least 8 characters' };
+       }
+       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+         return { 
+           success: false, 
+           message: 'Password must contain uppercase, lowercase, and number' 
+         };
+       }
 
-      const { data } = await api.post('/auth/register', {
-        username,
-        email,
-        password,
-        role,
-        organizationName,
-        organizationEmail,
-        organizationPhone
-      });
-      
-      if (!data.token || !data._id) {
-        return { success: false, message: 'Invalid response from server' };
-      }
+       const { data } = await api.post('/auth/register', {
+         username,
+         email,
+         password,
+         organizationName,
+         organizationEmail,
+         organizationPhone
+       });
+       
+       if (!data.token || !data._id) {
+         return { success: false, message: 'Invalid response from server' };
+       }
 
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data));
-      setUser(data);
-      return { success: true };
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Registration failed. Please try again.' 
-      };
-    }
-  };
+       localStorage.setItem('token', data.token);
+       localStorage.setItem('user', JSON.stringify(data));
+       setUser(data);
+       return { success: true };
+     } catch (error) {
+       return { 
+         success: false, 
+         message: error.response?.data?.message || 'Registration failed. Please try again.' 
+       };
+     }
+   };
 
   const logout = () => {
     localStorage.removeItem('token');

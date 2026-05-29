@@ -6,15 +6,18 @@ const Organization = require('../models/Organization');
 const { validateRegister, validateLogin } = require('../middleware/validation');
 
 const generateToken = (id) => {
-  const secret = process.env.JWT_SECRET || 'dental_clinic_fallback_secret_key_for_development_only_32_chars_minimum';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
   return jwt.sign({ id }, secret, {
-    expiresIn: '7d' // Reduced from 30d for better security
+    expiresIn: '7d'
   });
 };
 
 router.post('/register', validateRegister, async (req, res) => {
   try {
-    const { username, email, password, role, organizationName, organizationEmail, organizationPhone } = req.body;
+    const { username, email, password, organizationName, organizationEmail, organizationPhone } = req.body;
 
     // Check if user already exists with this email in any organization
     const userExists = await User.findOne({ email });
@@ -22,11 +25,11 @@ router.post('/register', validateRegister, async (req, res) => {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
-    // Create organization if this is a new registration (admin role)
+    // Create organization and admin user for new clinic registration
     let organizationId;
     
-    if (role === 'admin' && organizationName) {
-      // Creating new organization
+    if (organizationName && organizationEmail && organizationPhone) {
+      // Creating new organization with admin user
       const orgExists = await Organization.findOne({ email: organizationEmail });
       if (orgExists) {
         return res.status(400).json({ message: 'Organization with this email already exists' });
@@ -45,29 +48,33 @@ router.post('/register', validateRegister, async (req, res) => {
       });
 
       organizationId = organization._id;
-    } else {
-      return res.status(400).json({ message: 'Organization details required for registration' });
-    }
-
-    const user = await User.create({
-      organizationId,
-      username,
-      email,
-      password,
-      role: role || 'admin'
-    });
-
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        organizationId: user.organizationId,
-        token: generateToken(user._id)
+      
+      // Create admin user for the new organization
+      const user = await User.create({
+        organizationId,
+        username,
+        email,
+        password,
+        role: 'admin' // First user of new organization is always admin
       });
+
+      if (user) {
+        res.status(201).json({
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          organizationId: user.organizationId,
+          token: generateToken(user._id)
+        });
+      } else {
+        res.status(400).json({ message: 'Invalid user data' });
+      }
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      // Regular user registration (without organization details) - creates staff user
+      // In a real application, you might want to associate this with an existing organization
+      // via invitation or other means. For now, we'll require organization details.
+      return res.status(400).json({ message: 'Organization details are required for registration' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

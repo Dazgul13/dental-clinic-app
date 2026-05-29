@@ -66,4 +66,53 @@ router.get('/users', protect, async (req, res) => {
   }
 });
 
+/**
+ * UPDATE user role (promote/demote)
+ * Only admins can change user roles
+ */
+router.put('/users/:userId/role', protect, async (req, res) => {
+  try {
+    // Only admins can change user roles
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can change user roles' });
+    }
+
+    const { role } = req.body;
+    
+    // Validate role
+    if (!role || !['admin', 'staff'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role. Must be admin or staff' });
+    }
+
+    // Find the user and ensure they belong to the same organization
+    const user = await User.findOne({
+      _id: req.params.userId,
+      organizationId: req.organizationId
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent self-demotion (admins can't remove their own admin role)
+    if (user._id.toString() === req.user._id.toString() && role === 'staff') {
+      return res.status(400).json({ message: 'Cannot remove your own admin role' });
+    }
+
+    // Update user role
+    user.role = role;
+    await user.save();
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

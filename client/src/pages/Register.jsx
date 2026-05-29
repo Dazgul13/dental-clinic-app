@@ -57,15 +57,14 @@ const Register = () => {
 
     setLoading(true);
 
-    const result = await register({
-      username: formData.username,
-      email: formData.email,
-      password: formData.password,
-      role: 'admin',
-      organizationName: formData.organizationName,
-      organizationEmail: formData.organizationEmail,
-      organizationPhone: formData.organizationPhone
-    });
+     const result = await register({
+       username: formData.username,
+       email: formData.email,
+       password: formData.password,
+       organizationName: formData.organizationName,
+       organizationEmail: formData.organizationEmail,
+       organizationPhone: formData.organizationPhone
+     });
 
     if (result.success) {
       toast.success('Account created! Welcome to your clinic dashboard.');

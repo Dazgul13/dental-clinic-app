@@ -8,7 +8,10 @@ const protect = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
-      const secret = process.env.JWT_SECRET || 'dental_clinic_fallback_secret_key_for_development_only_32_chars_minimum';
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        return res.status(500).json({ message: 'Server configuration error' });
+      }
       const decoded = jwt.verify(token, secret);
       
       // Get user with organization
