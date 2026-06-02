@@ -154,10 +154,10 @@ Admins can promote or demote staff members to/from admin role as needed.
 2. Create a new Web Service on [Render](https://render.com)
 3. Set root directory to `server`
 4. Set environment variables:
-   - `MONGO_URI`
-   - `JWT_SECRET`
-   - `CLIENT_URL` (your Vercel frontend URL)
-   - `NODE_ENV=production`
+    - `MONGO_URI`
+    - `JWT_SECRET`
+    - `CLIENT_URL` (your Vercel frontend URL, without trailing slash)
+    - `NODE_ENV=production`
 
 ### Frontend (Vercel)
 
