@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const { connectTestDB } = require('./config/testDb');
+const connectDB = require('./config/db'); // Production database connection
 const authRoutes = require('./routes/authRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
@@ -14,7 +14,7 @@ const organizationRoutes = require('./routes/organizationRoutes');
 
 dotenv.config();
 
-connectTestDB();
+connectDB();
 
 const app = express();
 
@@ -24,9 +24,17 @@ app.use(helmet({
   hsts: process.env.NODE_ENV === 'production'
 }));
 
-// CORS Configuration
+// CORS Configuration - Dynamic handling for local and deployed environments
+const isProduction = process.env.NODE_ENV === 'production';
+let clientUrl = process.env.CLIENT_URL;
+if (clientUrl) {
+  // Remove trailing slash if present to avoid CORS issues
+  clientUrl = clientUrl.replace(/\/+$/, '');
+}
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: isProduction
+    ? clientUrl
+    : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:8080', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:8080'],
   credentials: true,
   optionsSuccessStatus: 200
 };
@@ -68,10 +76,10 @@ app.get('/', (req, res) => {
 
 // Apply rate limiters
 app.use('/api/auth', authLimiter, authRoutes);
-app.use('/api', apiLimiter);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/organization', organizationRoutes);
+app.use('/api', apiLimiter);
 
 // 404 Handler
 app.use((req, res, next) => {

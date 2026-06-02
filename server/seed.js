@@ -1,5 +1,5 @@
+require('dotenv').config({ path: __dirname + '/.env' });
 const mongoose = require('mongoose');
-const { connectTestDB } = require('./config/testDb');
 const Organization = require('./models/Organization');
 const User = require('./models/User');
 const Patient = require('./models/Patient');
@@ -7,7 +7,7 @@ const Appointment = require('./models/Appointment');
 
 const seedData = async () => {
   try {
-    await connectTestDB();
+    await mongoose.connect(process.env.MONGO_URI);
     
     // Clear existing data
     await Organization.deleteMany({});
