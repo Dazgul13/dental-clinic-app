@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import AppointmentModal from '../components/AppointmentModal';
@@ -38,7 +38,6 @@ const Schedule = () => {
   const fetchAppointments = async () => {
     try {
       if (viewMode === 'week') {
-        // Fetch appointments for the entire week
         const startDate = selectedDate;
         const endDate = new Date(selectedDate);
         endDate.setDate(endDate.getDate() + 6);
@@ -46,7 +45,6 @@ const Schedule = () => {
         const { data } = await api.get(`/appointments?startDate=${startDate}&endDate=${endDate.toISOString().split('T')[0]}`);
         setAppointments(data);
       } else {
-        // Fetch appointments for single day
         const { data } = await api.get(`/appointments?date=${selectedDate}`);
         setAppointments(data);
       }
@@ -64,6 +62,7 @@ const Schedule = () => {
     fetchAppointments();
   };
 
+  // Update appointment status
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     if (newStatus === 'reschedule') {
       const appointment = appointments.find(apt => apt._id === appointmentId);
@@ -78,13 +77,8 @@ const Schedule = () => {
     try {
       await api.put(`/appointments/${appointmentId}`, { status: newStatus });
       
-      // Update the appointment in the local state
       setAppointments(prev => 
-        prev.map(apt => 
-          apt._id === appointmentId 
-            ? { ...apt, status: newStatus }
-            : apt
-        )
+        prev.map(apt => apt._id === appointmentId ? { ...apt, status: newStatus } : apt)
       );
       
       toast.success(`Appointment status updated to ${newStatus}`);
@@ -96,6 +90,7 @@ const Schedule = () => {
     }
   };
 
+  // Handle rescheduling
   const handleReschedule = async () => {
     if (!rescheduleDate || !rescheduleTime) {
       toast.error('Please select both date and time');
@@ -111,14 +106,7 @@ const Schedule = () => {
         status: 'scheduled'
       });
       
-      // Update the appointment in the local state
-      setAppointments(prev => 
-        prev.map(apt => 
-          apt._id === rescheduleAppointment._id 
-            ? { ...apt, date: newDateTime.toISOString(), status: 'scheduled' }
-            : apt
-        )
-      );
+      setAppointments(prev => prev.map(apt => apt._id === rescheduleAppointment._id ? { ...apt, date: newDateTime.toISOString(), status: 'scheduled' } : apt));
       
       toast.success('Appointment rescheduled successfully');
       setShowRescheduleModal(false);
@@ -133,94 +121,81 @@ const Schedule = () => {
     }
   };
 
+  // Get appointments for a specific date
   const getAppointmentsForDate = (date) => {
-    return appointments.filter(apt => 
-      apt.date.split('T')[0] === date
-    ).sort((a, b) => new Date(a.date) - new Date(b.date));
+    return appointments.filter(apt => apt.date.split('T')[0] === date).sort((a, b) => new Date(a.date) - new Date(b.date));
   };
 
+  // Premium formatters
   const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   const formatShortDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    });
+    return new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
 
   const isToday = (date) => {
     return date === new Date().toISOString().split('T')[0];
   };
 
+  // Premium status colors
   const getStatusColor = (status) => {
     switch (status) {
-      case 'scheduled':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      case 'reschedule':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'scheduled': return 'bg-teal-100 text-teal-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      case 'reschedule': return 'bg-amber-100 text-amber-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
     <div className="px-4 sm:px-0">
+      {/* Premium Page Header */}
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Schedule</h1>
-          <p className="mt-2 text-sm text-gray-600">View and manage appointments</p>
+          <h1 className="text-3xl font-bold text-navy-900">Schedule</h1>
+          <p className="mt-2 text-sm text-gray-600">View and manage appointments with premium calendar workflow</p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <div className="flex rounded-md shadow-sm">
+          {/* View Mode Toggle */}
+          <div className="flex rounded-lg shadow-sm">
             <button
               onClick={() => setViewMode('day')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-md border ${
-                viewMode === 'day'
-                  ? 'bg-primary-600 text-white border-primary-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-l-lg border ${
+                viewMode === 'day' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              } transition`}
             >
               Day
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${
-                viewMode === 'week'
-                  ? 'bg-primary-600 text-white border-primary-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-              }`}
+              className={`px-4 py-2 text-sm font-medium rounded-r-lg border-t border-r border-b ${
+                viewMode === 'week' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              } transition`}
             >
               Week
             </button>
           </div>
+          {/* Schedule Button */}
           <button
             onClick={() => setShowModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition"
           >
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Schedule Appointment
           </button>
         </div>
       </div>
 
+      {/* Date Selector */}
       <div className="mb-6 flex items-center space-x-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -228,63 +203,46 @@ const Schedule = () => {
           </label>
           <input
             type="date"
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-white shadow-sm transition"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
           />
         </div>
         <div className="pt-6">
-          <span className="text-sm text-gray-600">
-            {viewMode === 'week' 
-              ? `${formatShortDate(selectedDate)} - ${formatShortDate(weekDates[6] || selectedDate)}`
-              : formatDate(selectedDate)
-            }
+          <span className="text-sm text-navy-600 font-medium">
+            {viewMode === 'week' ? `${formatShortDate(selectedDate)} - ${formatShortDate(weekDates[6] || selectedDate)}` : formatDate(selectedDate)}
           </span>
         </div>
       </div>
 
+      {/* Week View - Premium calendar grid */}
       {viewMode === 'week' ? (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Weekly Schedule
-            </h3>
+        <div className="bg-white shadow-sm rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-navy-900">Weekly Schedule</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-1 bg-gray-200">
+          <div className="grid grid-cols-7 gap-0 bg-gray-100">
             {weekDates.map((date, index) => {
               const dayAppointments = getAppointmentsForDate(date);
               return (
-                <div key={date} className="bg-white min-h-[200px]">
+                <div key={date} className="bg-white min-h-[200px] border-r border-gray-100 last:border-r-0">
                   <div className={`p-3 text-center border-b ${
-                    isToday(date) ? 'bg-primary-50 text-primary-700 font-semibold' : 'bg-gray-50'
+                    isToday(date) ? 'bg-teal-50 text-teal-700 font-semibold' : 'bg-gray-50'
                   }`}>
-                    <div className="text-sm font-medium">
-                      {formatShortDate(date)}
-                    </div>
-                    {isToday(date) && (
-                      <div className="text-xs text-primary-600">Today</div>
-                    )}
+                    <div className="text-sm font-medium">{formatShortDate(date)}</div>
+                    {isToday(date) && <div className="text-xs text-teal-600">Today</div>}
                   </div>
                   <div className="p-2 space-y-1">
                     {dayAppointments.map((appointment) => (
-                      <div
-                        key={appointment._id}
-                        className="text-xs p-2 rounded bg-gray-50 hover:bg-gray-100 cursor-pointer"
-                      >
-                        <div className="font-medium text-gray-900 truncate">
-                          {appointment.patientId?.firstName} {appointment.patientId?.lastName}
-                        </div>
-                        <div className="text-gray-500">
-                          {formatTime(appointment.date)}
-                        </div>
+                      <div key={appointment._id} className="text-xs p-2 rounded bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+                        <div className="font-medium text-navy-900 truncate">{appointment.patientId?.firstName} {appointment.patientId?.lastName}</div>
+                        <div className="text-gray-500">{formatTime(appointment.date)}</div>
                         <div className="mt-1">
                           <select
                             value={appointment.status}
                             onChange={(e) => handleStatusUpdate(appointment._id, e.target.value)}
                             disabled={updatingStatus === appointment._id}
-                            className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(appointment.status)} ${
-                              updatingStatus === appointment._id ? 'opacity-50' : 'cursor-pointer'
-                            }`}
+                            className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(appointment.status)} ${updatingStatus === appointment._id ? 'opacity-50' : ''} cursor-pointer`}
                           >
                             <option value="scheduled">Scheduled</option>
                             <option value="completed">Completed</option>
@@ -294,11 +252,7 @@ const Schedule = () => {
                         </div>
                       </div>
                     ))}
-                    {dayAppointments.length === 0 && (
-                      <div className="text-xs text-gray-400 text-center py-4">
-                        No appointments
-                      </div>
-                    )}
+                    {dayAppointments.length === 0 && <div className="text-xs text-gray-400 text-center py-4">No appointments</div>}
                   </div>
                 </div>
               );
@@ -306,13 +260,12 @@ const Schedule = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Appointments for {formatDate(selectedDate)}
-            </h3>
+        /* Day View - Premium card layout */
+        <div className="bg-white shadow-sm rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h3 className="text-lg font-semibold text-navy-900">Appointments for {formatDate(selectedDate)}</h3>
           </div>
-          <div className="px-4 py-5 sm:p-6">
+          <div className="px-6 py-5">
             {loading ? (
               <p className="text-gray-500">Loading appointments...</p>
             ) : appointments.length === 0 ? (
@@ -320,45 +273,30 @@ const Schedule = () => {
             ) : (
               <div className="space-y-4">
                 {appointments.map((appointment) => (
-                  <div
-                    key={appointment._id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-                  >
+                  <div key={appointment._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span className="text-primary-600 font-medium text-lg">
-                            {appointment.patientId?.firstName?.[0]}{appointment.patientId?.lastName?.[0]}
-                          </span>
+                        <div className="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center">
+                          <span className="text-teal-600 font-medium text-lg">{appointment.patientId?.firstName?.[0]}{appointment.patientId?.lastName?.[0]}</span>
                         </div>
                       </div>
                       <div>
-                        <p className="text-base font-medium text-gray-900">
-                          {appointment.patientId?.firstName} {appointment.patientId?.lastName}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {formatTime(appointment.date)} • Dr. {appointment.dentistId?.username}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {appointment.patientId?.phone} • {appointment.patientId?.email}
-                        </p>
+                        <p className="text-base font-medium text-navy-900">{appointment.patientId?.firstName} {appointment.patientId?.lastName}</p>
+                        <p className="text-sm text-gray-600">{formatTime(appointment.date)} • Dr. {appointment.dentistId?.username}</p>
+                        <p className="text-sm text-gray-500">{appointment.patientId?.phone} • {appointment.patientId?.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <select
-                        value={appointment.status}
-                        onChange={(e) => handleStatusUpdate(appointment._id, e.target.value)}
-                        disabled={updatingStatus === appointment._id}
-                        className={`px-3 py-1 rounded-full text-xs font-medium border-0 ${getStatusColor(appointment.status)} ${
-                          updatingStatus === appointment._id ? 'opacity-50' : 'cursor-pointer'
-                        }`}
-                      >
-                        <option value="scheduled">Scheduled</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="reschedule">Reschedule</option>
-                      </select>
-                    </div>
+                    <select
+                      value={appointment.status}
+                      onChange={(e) => handleStatusUpdate(appointment._id, e.target.value)}
+                      disabled={updatingStatus === appointment._id}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border-0 ${getStatusColor(appointment.status)} ${updatingStatus === appointment._id ? 'opacity-50' : ''}`}
+                    >
+                      <option value="scheduled">Scheduled</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="reschedule">Reschedule</option>
+                    </select>
                   </div>
                 ))}
               </div>
@@ -367,75 +305,40 @@ const Schedule = () => {
         </div>
       )}
 
+      {/* Schedule Appointment Modal */}
       {showModal && (
-        <AppointmentModal
-          onClose={() => setShowModal(false)}
-          onSuccess={handleAppointmentAdded}
-        />
+        <AppointmentModal onClose={() => setShowModal(false)} onSuccess={handleAppointmentAdded} />
       )}
 
-      {/* Reschedule Modal */}
+      {/* Reschedule Modal - Premium styling */}
       {showRescheduleModal && rescheduleAppointment && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-xl rounded-xl bg-white">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Reschedule Appointment</h3>
-              <button 
-                onClick={() => setShowRescheduleModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
+              <h3 className="text-lg font-semibold text-navy-900">Reschedule Appointment</h3>
+              <button onClick={() => setShowRescheduleModal(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-900">
-                {rescheduleAppointment.patientId?.firstName} {rescheduleAppointment.patientId?.lastName}
-              </p>
-              <p className="text-sm text-gray-500">
-                Current: {formatDate(rescheduleAppointment.date)} at {formatTime(rescheduleAppointment.date)}
-              </p>
+            <div className="mb-4 p-3 bg-teal-50 rounded-lg">
+              <p className="text-sm font-medium text-navy-900">{rescheduleAppointment.patientId?.firstName} {rescheduleAppointment.patientId?.lastName}</p>
+              <p className="text-sm text-gray-600">Current: {formatDate(rescheduleAppointment.date)} at {formatTime(rescheduleAppointment.date)}</p>
             </div>
-
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New Date</label>
-                <input
-                  type="date"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  value={rescheduleDate}
-                  onChange={(e) => setRescheduleDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                />
+                <input type="date" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} min={new Date().toISOString().split('T')[0]} />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New Time</label>
-                <input
-                  type="time"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  value={rescheduleTime}
-                  onChange={(e) => setRescheduleTime(e.target.value)}
-                />
+                <input type="time" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500" value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} />
               </div>
             </div>
-
             <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowRescheduleModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleReschedule}
-                disabled={rescheduling}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
-              >
-                {rescheduling ? 'Rescheduling...' : 'Reschedule'}
-              </button>
+              <button onClick={() => setShowRescheduleModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+              <button onClick={handleReschedule} disabled={rescheduling} className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition">{rescheduling ? 'Rescheduling...' : 'Reschedule'}</button>
             </div>
           </div>
         </div>

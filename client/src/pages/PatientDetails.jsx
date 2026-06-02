@@ -171,7 +171,7 @@ const PatientDetails = () => {
 
   const handleEditNote = (note) => {
     setEditingNote(note._id);
-    setEditNoteText(note.text);
+    setEditNoteText(note.note);
   };
 
   const handleUpdateNote = async (noteId) => {
@@ -230,7 +230,7 @@ const PatientDetails = () => {
   };
 
   // Pagination logic for notes
-  const reversedNotes = patient?.notes ? [...patient.notes].reverse() : [];
+  const reversedNotes = patient?.clinicalNotes ? [...patient.clinicalNotes].reverse() : [];
   const indexOfLastNote = currentPage * notesPerPage;
   const indexOfFirstNote = indexOfLastNote - notesPerPage;
   const currentNotes = reversedNotes.slice(indexOfFirstNote, indexOfLastNote);
@@ -336,7 +336,7 @@ const PatientDetails = () => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
             >
-              Clinical Notes ({patient.notes?.length || 0})
+              Clinical Notes ({patient.clinicalNotes?.length || 0})
             </button>
           </nav>
         </div>
@@ -547,7 +547,7 @@ const PatientDetails = () => {
               <div className="space-y-4">
                 {currentNotes.length > 0 ? (
                   currentNotes.map((note) => {
-                    console.log('Rendering note:', note._id, note.text);
+                    console.log('Rendering note:', note._id, note.note);
                     return (
                       <div key={note._id} className="bg-gray-50 p-4 rounded-lg">
                         {editingNote === note._id ? (
@@ -577,7 +577,7 @@ const PatientDetails = () => {
                         ) : (
                           <>
                             <div className="flex justify-between items-start mb-2">
-                              <p className="text-sm text-gray-900 flex-1">{note.text}</p>
+                              <p className="text-sm text-gray-900 flex-1">{note.note}</p>
                               <div className="flex space-x-2 ml-4">
                                 <button
                                   onClick={() => handleEditNote(note)}
@@ -603,7 +603,7 @@ const PatientDetails = () => {
                               </div>
                             </div>
                             <div className="flex items-center text-xs text-gray-500">
-                              <span className="font-medium">{note.author?.username || 'Unknown'}</span>
+                              <span className="font-medium">{note.dentist?.username || 'Unknown'}</span>
                               <span className="mx-2">•</span>
                               <span>{formatDateTime(note.date)}</span>
                             </div>
