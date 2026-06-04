@@ -1,20 +1,46 @@
 ﻿import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 // Navbar component for public pages - with inline styles for visibility
 export const Navbar = () => {
+  const [width, setWidth] = useState(window.innerWidth);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = width < 768;
+
   return (
     <nav style={{ backgroundColor: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', borderBottom: '1px solid #e5e7eb' }}>
       <div style={{ maxWidth: '80rem', margin: '0 auto', padding: '0 1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', height: '4rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', height: '4rem', alignItems: 'center', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
             <span style={{ fontSize: '1.5rem' }}>🦷</span>
             <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#1f2937' }}>Dental Clinic</span>
           </Link>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: isMobile ? 'none' : 'flex', gap: '1rem' }}>
             <Link to="/login" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151', textDecoration: 'none' }}>Login</Link>
             <Link to="/register" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: '500', color: 'white', backgroundColor: '#2563eb', borderRadius: '0.375rem', textDecoration: 'none' }}>Register</Link>
           </div>
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              style={{ background: 'none', border: 'none', fontSize: '1.5rem', color: '#374151' }}
+            >
+              {isMobileOpen ? '✕' : '☰'}
+            </button>
+          )}
         </div>
+        {isMobile && isMobileOpen && (
+          <div style={{ marginTop: '1rem' }}>
+            <Link to="/login" style={{ display: 'block', padding: '0.5rem 1rem', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500', color: '#374151', textDecoration: 'none' }}>Login</Link>
+            <Link to="/register" style={{ display: 'block', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: '500', color: 'white', backgroundColor: '#2563eb', borderRadius: '0.375rem', textDecoration: 'none' }}>Register</Link>
+          </div>
+        )}
       </div>
     </nav>
   );

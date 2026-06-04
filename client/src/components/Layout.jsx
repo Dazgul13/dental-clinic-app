@@ -23,7 +23,7 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Premium Navigation Sidebar - Royal Navy theme */}
-      <nav className="fixed inset-y-0 left-0 z-50 w-64 bg-navy-900 text-white transform transition-transform duration-300 ease-in-out md:translate-x-0">
+      <nav className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy-900 text-white transform transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="flex flex-col h-full">
           {/* Logo/Brand Section */}
           <div className="flex items-center h-16 px-6 border-b border-navy-800">
