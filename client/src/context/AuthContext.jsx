@@ -25,14 +25,20 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (username, password) => {
+  const login = async (username, password, organizationId = '') => {
     try {
       // Basic client-side validation
       if (!username || !password) {
         return { success: false, message: 'Username and password are required' };
       }
 
-      const { data } = await api.post('/auth/login', { username, password });
+      const loginData = { username, password };
+      // Only add organizationId if provided (for super admin login)
+      if (organizationId) {
+        loginData.organizationId = organizationId;
+      }
+
+      const { data } = await api.post('/auth/login', loginData);
       
       // Validate response data
       if (!data.token || !data._id) {

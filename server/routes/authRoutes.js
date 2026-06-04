@@ -16,6 +16,14 @@ const generateToken = (id) => {
 };
 
 router.post('/register', validateRegister, async (req, res) => {
+  // SUPER ADMIN PROTECTION: Only allow registration with super admin secret
+  const adminSecret = req.headers['x-super-admin-secret'];
+  if (!adminSecret || adminSecret !== process.env.SUPER_ADMIN_MASTER_SECRET) {
+    return res.status(403).json({ 
+      message: 'Access denied. Only system administrators can provision new tenant organizations.' 
+    });
+  }
+
   try {
     const { username, email, password, organizationName, organizationEmail, organizationPhone } = req.body;
 

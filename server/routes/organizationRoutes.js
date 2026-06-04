@@ -115,4 +115,18 @@ router.put('/users/:userId/role', protect, async (req, res) => {
   }
 });
 
+/**
+ * GET public list of organizations (for login dropdown)
+ * Returns only name and _id for security
+ */
+router.get('/public/list', async (req, res) => {
+  try {
+    // Only select the id and name fields to protect privacy/security
+    const organizations = await Organization.find({}, 'name _id').sort({ name: 1 });
+    res.json(organizations);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching organizations' });
+  }
+});
+
 module.exports = router;

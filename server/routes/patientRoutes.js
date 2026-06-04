@@ -204,6 +204,38 @@ router.delete('/:id', protect, validateMongoId, async (req, res) => {
 });
 
 /**
+ * UPDATE treatment plan status
+ */
+router.patch('/:patientId/treatment-plans/:planId', protect, async (req, res) => {
+  try {
+    const patient = await Patient.findOne({ 
+      _id: req.params.patientId, 
+      organizationId: req.organizationId 
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Find the treatment plan
+    const planIndex = patient.treatmentPlans.findIndex(plan => plan._id.toString() === req.params.planId);
+    if (planIndex === -1) {
+      return res.status(404).json({ message: 'Treatment plan not found' });
+    }
+
+    // Update the status
+    patient.treatmentPlans[planIndex].status = req.body.status || patient.treatmentPlans[planIndex].status;
+
+    await patient.save();
+
+    res.json(patient);
+  } catch (error) {
+    console.error('Error updating treatment plan:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+/**
  * UPDATE dental chart tooth
  */
 router.put('/:patientId/dental-chart/:toothNumber', protect, async (req, res) => {

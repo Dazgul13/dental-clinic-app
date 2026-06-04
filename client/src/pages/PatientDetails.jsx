@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import DentalChart from '../components/DentalChart';
+import PediatricDentalChart from '../components/PediatricDentalChart';
 
 const PatientDetails = () => {
   const { id } = useParams();
@@ -22,7 +23,7 @@ const PatientDetails = () => {
   const [editNoteText, setEditNoteText] = useState('');
   const [updatingNote, setUpdatingNote] = useState(false);
   const [deletingNote, setDeletingNote] = useState(null);
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'notes', 'dental'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'notes', 'dental', 'treatment'
   
   // Pagination for notes
   const [currentPage, setCurrentPage] = useState(1);
@@ -174,29 +175,35 @@ const PatientDetails = () => {
     setEditNoteText(note.note);
   };
 
-  const handleUpdateNote = async (noteId) => {
-    if (!editNoteText.trim()) {
-      toast.error('Note text cannot be empty');
-      return;
-    }
+   const handleUpdateNote = async (noteId) => {
+     if (!editNoteText.trim()) {
+       toast.error('Note text cannot be empty');
+       return;
+     }
 
-    console.log('Updating note:', noteId, 'with text:', editNoteText);
-    setUpdatingNote(true);
-    try {
-      const { data } = await api.put(`/patients/${id}/notes/${noteId}`, { text: editNoteText });
-      console.log('Note update response:', data);
-      setPatient(data);
-      setEditingNote(null);
-      setEditNoteText('');
-      toast.success('Note updated successfully');
-    } catch (error) {
-      console.error('Error updating note:', error);
-      console.error('Error response:', error.response?.data);
-      toast.error(error.response?.data?.message || 'Failed to update note');
-    } finally {
-      setUpdatingNote(false);
-    }
-  };
+     console.log('Updating note:', noteId, 'with text:', editNoteText);
+     setUpdatingNote(true);
+     try {
+       const { data } = await api.put(`/patients/${id}/notes/${noteId}`, { text: editNoteText });
+       console.log('Note update response:', data);
+       setPatient(data);
+       setEditingNote(null);
+       setEditNoteText('');
+       toast.success('Note updated successfully');
+     } catch (error) {
+       console.error('Error updating note:', error);
+       console.error('Error response:', error.response?.data);
+       toast.error(error.response?.data?.message || 'Failed to update note');
+     } finally {
+       setUpdatingNote(false);
+     }
+   };
+
+   // Handle treatment plan status updates
+   const handleUpdateTreatmentStatus = async (updatedPatient) => {
+     setPatient(updatedPatient);
+     toast.success('Treatment plan updated');
+   };
 
   const handleDeleteNote = async (noteId) => {
     if (!window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
@@ -304,227 +311,264 @@ const PatientDetails = () => {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('info')}
-              className={`${
-                activeTab === 'info'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Patient Information
-            </button>
-            <button
-              onClick={() => setActiveTab('dental')}
-              className={`${
-                activeTab === 'dental'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Dental Chart
-            </button>
-            <button
-              onClick={() => setActiveTab('notes')}
-              className={`${
-                activeTab === 'notes'
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Clinical Notes ({patient.clinicalNotes?.length || 0})
-            </button>
-          </nav>
-        </div>
+       {/* Tabs */}
+       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+         <div className="border-b border-gray-200">
+           <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+             <button
+               onClick={() => setActiveTab('info')}
+               className={`${
+                 activeTab === 'info'
+                   ? 'border-primary-500 text-primary-600'
+                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+             >
+               Patient Information
+             </button>
+             <button
+               onClick={() => setActiveTab('dental')}
+               className={`${
+                 activeTab === 'dental'
+                   ? 'border-primary-500 text-primary-600'
+                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+             >
+               Dental Chart
+             </button>
+             <button
+               onClick={() => setActiveTab('treatment')}
+               className={`${
+                 activeTab === 'treatment'
+                   ? 'border-primary-500 text-primary-600'
+                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+             >
+               Treatment Plan
+             </button>
+             <button
+               onClick={() => setActiveTab('notes')}
+               className={`${
+                 activeTab === 'notes'
+                   ? 'border-primary-500 text-primary-600'
+                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+             >
+               Clinical Notes ({patient.clinicalNotes?.length || 0})
+             </button>
+           </nav>
+         </div>
 
-        {/* Tab Content */}
-        <div className="p-6">
-          {/* Patient Information Tab */}
-          {activeTab === 'info' && (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="text-2xl leading-6 font-bold text-gray-900">
-                    {patient.firstName} {patient.lastName}
-                  </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal and medical information</p>
-                </div>
-                {isEditing && (
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={handleCancelEdit}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSaveEdit}
-                      disabled={saving}
-                      className="px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                    >
-                      {saving ? 'Saving...' : 'Save'}
-                    </button>
-                  </div>
-                )}
-              </div>
-          {isEditing ? (
-            <form onSubmit={handleSaveEdit} className="space-y-6 p-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                    value={editForm.firstName}
-                    onChange={handleEditChange}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                    value={editForm.lastName}
-                    onChange={handleEditChange}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                <input
-                  type="date"
-                  name="dob"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  value={editForm.dob}
-                  onChange={handleEditChange}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                    value={editForm.phone}
-                    onChange={handleEditChange}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                    value={editForm.email}
-                    onChange={handleEditChange}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Allergies (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  name="allergies"
-                  placeholder="e.g., Penicillin, Latex"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  value={editForm.allergies}
-                  onChange={handleEditChange}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Medical Conditions (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  name="conditions"
-                  placeholder="e.g., Diabetes, Hypertension"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                  value={editForm.conditions}
-                  onChange={handleEditChange}
-                />
-              </div>
-            </form>
-          ) : (
-            <dl className="sm:divide-y sm:divide-gray-200">
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formatDate(patient.dob)}</dd>
-              </div>
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.phone}</dd>
-              </div>
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.email}</dd>
-              </div>
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Allergies</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {patient.medicalHistory?.allergies?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {patient.medicalHistory.allergies.map((allergy, index) => (
-                        <span key={index} className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
-                          {allergy}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">None reported</span>
-                  )}
-                </dd>
-              </div>
-              <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt className="text-sm font-medium text-gray-500">Medical Conditions</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {patient.medicalHistory?.conditions?.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {patient.medicalHistory.conditions.map((condition, index) => (
-                        <span key={index} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                          {condition}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">None reported</span>
-                  )}
-                </dd>
-              </div>
-            </dl>
-          )}
-            </div>
-          )}
-
-          {/* Dental Chart Tab */}
-          {activeTab === 'dental' && (
-            <DentalChart 
-              patientId={id}
-              dentalChart={patient.dentalChart}
-              onUpdate={handleDentalChartUpdate}
-            />
-          )}
-
-          {/* Clinical Notes Tab */}
-          {activeTab === 'notes' && (
+         {/* Tab Content */}
+         <div className="p-6">
+           {/* Patient Information Tab */}
+           {activeTab === 'info' && (
+             <div>
+               <div className="flex justify-between items-center mb-4">
+                 <div>
+                   <h3 className="text-2xl leading-6 font-bold text-gray-900">
+                     {patient.firstName} {patient.lastName}
+                   </h3>
+                   <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal and medical information</p>
+                 </div>
+                 {isEditing && (
+                   <div className="flex space-x-2">
+                     <button
+                       onClick={handleCancelEdit}
+                       className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                     >
+                       Cancel
+                     </button>
+                     <button
+                       onClick={handleSaveEdit}
+                       disabled={saving}
+                       className="px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                     >
+                       {saving ? 'Saving...' : 'Save'}
+                     </button>
+                   </div>
+                 )}
+               </div>
+           {isEditing ? (
+             <form onSubmit={handleSaveEdit} className="space-y-6 p-6">
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                   <input
+                     type="text"
+                     name="firstName"
+                     required
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                     value={editForm.firstName}
+                     onChange={handleEditChange}
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                   <input
+                     type="text"
+                     name="lastName"
+                     required
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                     value={editForm.lastName}
+                     onChange={handleEditChange}
+                   />
+                 </div>
+               </div>
+ 
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                 <input
+                   type="date"
+                   name="dob"
+                   required
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                   value={editForm.dob}
+                   onChange={handleEditChange}
+                 />
+               </div>
+ 
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                   <input
+                     type="tel"
+                     name="phone"
+                     required
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                     value={editForm.phone}
+                     onChange={handleEditChange}
+                   />
+                 </div>
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                   <input
+                     type="email"
+                     name="email"
+                     required
+                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                     value={editForm.email}
+                     onChange={handleEditChange}
+                   />
+                 </div>
+               </div>
+ 
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Allergies (comma-separated)
+                 </label>
+                 <input
+                   type="text"
+                   name="allergies"
+                   placeholder="e.g., Penicillin, Latex"
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                   value={editForm.allergies}
+                   onChange={handleEditChange}
+                 />
+               </div>
+ 
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   Medical Conditions (comma-separated)
+                 </label>
+                 <input
+                   type="text"
+                   name="conditions"
+                   placeholder="e.g., Diabetes, Hypertension"
+                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                   value={editForm.conditions}
+                   onChange={handleEditChange}
+                 />
+               </div>
+             </form>
+           ) : (
+             <dl className="sm:divide-y sm:divide-gray-200">
+               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                 <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
+                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formatDate(patient.dob)}</dd>
+               </div>
+               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                 <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.phone}</dd>
+               </div>
+               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                 <dt className="text-sm font-medium text-gray-500">Email</dt>
+                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.email}</dd>
+               </div>
+               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                 <dt className="text-sm font-medium text-gray-500">Allergies</dt>
+                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                   {patient.medicalHistory?.allergies?.length > 0 ? (
+                     <div className="flex flex-wrap gap-2">
+                       {patient.medicalHistory.allergies.map((allergy, index) => (
+                         <span key={index} className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                           {allergy}
+                         </span>
+                       ))}
+                     </div>
+                   ) : (
+                     <span className="text-gray-400">None reported</span>
+                   )}
+                 </dd>
+               </div>
+               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                 <dt className="text-sm font-medium text-gray-500">Medical Conditions</dt>
+                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                   {patient.medicalHistory?.conditions?.length > 0 ? (
+                     <div className="flex flex-wrap gap-2">
+                       {patient.medicalHistory.conditions.map((condition, index) => (
+                         <span key={index} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                           {condition}
+                         </span>
+                       ))}
+                     </div>
+                   ) : (
+                     <span className="text-gray-400">None reported</span>
+                   )}
+                 </dd>
+               </div>
+             </dl>
+           )}
+             </div>
+           )}
+           {/* Dental Chart Tab */}
+           {activeTab === 'dental' && (
+             <div>
+               {/* Pediatric vs Standard Chart Switcher */}
+               {patient && patient.age <= 7 ? (
+                 <>
+                   <div className="bg-blue-50 p-2 text-blue-800 text-xs font-semibold rounded mb-4">
+                     👶 Pediatric View Active (Primary Teeth Charting) - Age: {patient.age}
+                   </div>
+                   <PediatricDentalChart 
+                     patientId={id}
+                     dentalChart={patient.dentalChart}
+                     onUpdate={handleDentalChartUpdate}
+                   />
+                 </>
+               ) : (
+                 <>
+                   <div className="bg-green-50 p-2 text-green-800 text-xs font-semibold rounded mb-4">
+                     🦷 Standard View Active (Permanent Teeth Charting) - Age: {patient.age}
+                   </div>
+                   <DentalChart 
+                     patientId={id}
+                     dentalChart={patient.dentalChart}
+                     onUpdate={handleDentalChartUpdate}
+                   />
+                 </>
+               )}
+             </div>
+           )}
+           {/* Treatment Plan Tab */}
+           {activeTab === 'treatment' && (
+             <TreatmentPlanList 
+               patientId={id} 
+               treatments={patient?.treatmentPlans || []}
+               onUpdateStatus={handleUpdateTreatmentStatus}
+             />
+           )}
+           {/* Clinical Notes Tab */}
+           {activeTab === 'notes' && (
             <div>
               <form onSubmit={handleAddNote} className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Add New Note</label>
