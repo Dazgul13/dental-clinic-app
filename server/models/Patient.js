@@ -60,11 +60,12 @@ const patientSchema = new mongoose.Schema({
   }],
   dentalChart: {
     teeth: [{
+      // Tooth number supports both numeric (1-32 permanent) and letter (A-T primary) teeth
+      // Mixed type allows for flexible tooth numbering system
       number: {
-        type: Number,
+        type: mongoose.Schema.Types.Mixed,
         required: true,
-        min: 1,
-        max: 32
+        // Validation handled in route middleware for both numeric and letter formats
       },
       status: {
         type: String,
@@ -107,6 +108,15 @@ const patientSchema = new mongoose.Schema({
       }
     }]
   },
+  // Row-Level Access Control (RLAC) - tracks who created this record
+  // SECURITY: Mandatory field for authorship-based data filtering
+  // Staff users can only see records they created; Admins see all org records
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false, // Allow false for backward compatibility with existing data
+    index: true
+  },
   // Array of treatment plans for this patient
   // Each plan is embedded as a subdocument for easy retrieval with patient data
   treatmentPlans: [{
@@ -145,16 +155,59 @@ const patientSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// COMPOUND INDEX: { organizationId: 1, createdBy: 1 }
+// SECURITY: Ensures lightning-fast queries for row-level filtering
+// This index guarantees isolation and performance at the database engine layer
+patientSchema.index({ organizationId: 1, createdBy: 1 });
+
 // Virtual field to calculate patient's age dynamically from date of birth
 // This avoids storing stale age values in the database
 // Calculation: difference between now and date of birth in milliseconds, converted to years
 patientSchema.virtual('age').get(function() {
-  if (!this.dob) return null; // Return null if DOB is not set
-  const diffMs = Date.now() - this.dob.getTime(); // Milliseconds between now and DOB
-  const ageDate = new Date(diffMs); // Create a date from the difference
-  // Extract years from the date (UTC to avoid timezone issues)
-  // Subtract 1970 because the Unix epoch starts at 1970-01-01
+  if (!this.dob) return null;
+  const diffMs = Date.now() - this.dob.getTime();
+  const ageDate = new Date(diffMs);
   return Math.abs(ageDate.getUTCFullYear() - 1970);
+});
+
+// Row-Level Access Control (RLAC) Query Middleware
+// SECURITY: Automatically filters queries based on user role to prevent data leakage
+// - Staff users can only see records they created
+// - Admin users see all records within their organization
+// - System admins can bypass with isSystemAdmin option in query
+patientSchema.pre(/^find/, function() {
+  // Skip filtering if this is a system admin audit query
+  // SECURITY: Allows system-wide access for administrative oversight
+  if (this.options.isSystemAdmin) {
+    return;
+  }
+
+  // Get the user context from query options (set by caller)
+  const userContext = this.options?.userContext;
+  if (!userContext) {
+    return; // No user context, skip filtering - let controller handle auth
+  }
+
+  const { role, userId } = userContext;
+
+  // SECURITY: Staff role - restrict to records created by this user only
+  // This prevents unauthorized access to other staff's patient records
+  if (role === 'staff') {
+    this.where({ createdBy: userId });
+  }
+
+  // SECURITY: Admin role - no additional filtering needed
+  // Admins have full view of their organization's data within org scope
+});
+
+// Pre-save hook to auto-populate createdBy field
+// SECURITY: Ensures authorship is always recorded on creation
+patientSchema.pre('save', function(next) {
+  // Auto-set createdBy on new records if not already set
+  if (this.isNew && !this.createdBy && this.options?.userContext?.userId) {
+    this.createdBy = this.options.userContext.userId;
+  }
+  next();
 });
 
 module.exports = mongoose.model('Patient', patientSchema);

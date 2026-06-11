@@ -25,22 +25,22 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (username, password, organizationId = '') => {
+  const login = async (username, password, clinicSlug = '') => {
     try {
-      // Basic client-side validation
       if (!username || !password) {
         return { success: false, message: 'Username and password are required' };
       }
 
       const loginData = { username, password };
-      // Only add organizationId if provided (for super admin login)
-      if (organizationId) {
-        loginData.organizationId = organizationId;
+      // SECURITY: Send clinic slug as header for anti-spam lookups
+      // The backend will verify the slug and check organization approval status
+      const headers = {};
+      if (clinicSlug) {
+        headers['X-Clinic-Slug'] = clinicSlug;
       }
 
-      const { data } = await api.post('/auth/login', loginData);
+      const { data } = await api.post('/auth/login', loginData, { headers });
       
-      // Validate response data
       if (!data.token || !data._id) {
         return { success: false, message: 'Invalid response from server' };
       }
@@ -50,7 +50,6 @@ export const AuthProvider = ({ children }) => {
       setUser(data);
       return { success: true };
     } catch (error) {
-      // Clear any existing auth data on error
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       

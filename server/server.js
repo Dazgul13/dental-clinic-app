@@ -6,11 +6,12 @@ const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const connectDB = require('./config/db'); // Production database connection
+const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
+const sysAdminRoutes = require('./routes/sysAdminRoutes');
 
 dotenv.config();
 
@@ -57,6 +58,16 @@ const authLimiter = rateLimit({
   skipSuccessfulRequests: true,
 });
 
+// SECURITY: Strict rate limiter for slug verification endpoint
+// Prevents enumeration attacks by limiting automated bot scraping attempts
+const slugVerifyLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === 'production' ? 5 : 20, // Very strict in production
+  message: 'Too many verification attempts, please wait before trying again.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Body Parser with size limits
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -76,9 +87,13 @@ app.get('/', (req, res) => {
 
 // Apply rate limiters
 app.use('/api/auth', authLimiter, authRoutes);
+// SECURITY: Apply strict rate limiter to verify-slug to prevent enumeration attacks
+app.use('/api/organization/verify-slug', slugVerifyLimiter);
+app.use('/api/organization', organizationRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
-app.use('/api/organization', organizationRoutes);
+// System admin routes - separate from tenant routes for administrative oversight
+app.use('/api/sys-admin', apiLimiter, sysAdminRoutes);
 app.use('/api', apiLimiter);
 
 // 404 Handler

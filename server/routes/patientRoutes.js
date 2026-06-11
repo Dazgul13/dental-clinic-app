@@ -1,3 +1,6 @@
+// Patient Routes
+// Handles all patient-related API endpoints with multi-tenant organization scoping
+
 const express = require('express');
 const router = express.Router();
 const Patient = require('../models/Patient');
@@ -10,6 +13,8 @@ const {
   validateSearch 
 } = require('../middleware/validation');
 
+// GET all patients with optional search filter
+// SECURITY: RLAC middleware automatically filters by createdBy for staff users
 router.get('/', protect, validateSearch, async (req, res) => {
   try {
     const { search } = req.query;
@@ -24,19 +29,25 @@ router.get('/', protect, validateSearch, async (req, res) => {
       ];
     }
 
-    const patients = await Patient.find(query).sort({ createdAt: -1 });
+    // SECURITY: RLAC query middleware automatically appends createdBy filter for staff
+    // Pass user context through query options for the pre-find hook
+    const patients = await Patient.find(query, null, { userContext: { role: req.user.role, userId: req.user._id } }).sort({ createdAt: -1 });
     res.json(patients);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+// GET single patient by ID with populated clinical notes
+// SECURITY: RLAC middleware automatically filters by createdBy for staff users
 router.get('/:id', protect, validateMongoId, async (req, res) => {
   try {
+    // SECURITY: Pass user context for RLAC filtering in pre-findOne hook
     const patient = await Patient.findOne({ 
       _id: req.params.id, 
       organizationId: req.organizationId 
-    }).populate('clinicalNotes.dentist', 'username');
+    }, null, { userContext: { role: req.user.role, userId: req.user._id } })
+      .populate('clinicalNotes.dentist', 'username');
     
     if (patient) {
       res.json(patient);
@@ -48,12 +59,18 @@ router.get('/:id', protect, validateMongoId, async (req, res) => {
   }
 });
 
+// CREATE new patient
+// SECURITY: Sets createdBy to the authenticated user for RLAC tracking
+// Staff can only create patients; createdBy ensures ownership for row-level filtering
 router.post('/', protect, validatePatient, async (req, res) => {
   try {
     const { firstName, lastName, dob, phone, email, address, medicalHistory } = req.body;
 
+    // SECURITY: createdBy is set to the authenticated user ID
+    // This enables Row-Level Access Control (RLAC) for data segregation
     const patient = await Patient.create({
       organizationId: req.organizationId,
+      createdBy: req.user._id,
       firstName,
       lastName,
       dob,
@@ -69,6 +86,7 @@ router.post('/', protect, validatePatient, async (req, res) => {
   }
 });
 
+// UPDATE patient information
 router.put('/:id', protect, validateMongoId, validatePatient, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -95,6 +113,7 @@ router.put('/:id', protect, validateMongoId, validatePatient, async (req, res) =
   }
 });
 
+// ADD clinical note to patient
 router.post('/:id/notes', protect, validateMongoId, validateNote, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -123,9 +142,7 @@ router.post('/:id/notes', protect, validateMongoId, validateNote, async (req, re
   }
 });
 
-/**
- * UPDATE clinical note
- */
+// UPDATE clinical note - modifies existing note text
 router.put('/:patientId/notes/:noteId', protect, validateNoteParams, validateNote, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -154,9 +171,7 @@ router.put('/:patientId/notes/:noteId', protect, validateNoteParams, validateNot
   }
 });
 
-/**
- * DELETE clinical note
- */
+// DELETE clinical note - Fixed to use pull() instead of deleteOne() on subdocument
 router.delete('/:patientId/notes/:noteId', protect, validateNoteParams, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -168,23 +183,21 @@ router.delete('/:patientId/notes/:noteId', protect, validateNoteParams, async (r
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    const note = patient.clinicalNotes.id(req.params.noteId);
-    if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
-    }
-
-    note.deleteOne();
+    // Remove the note using pull() - correct method for removing subdocuments from array
+    patient.clinicalNotes.pull(req.params.noteId);
     await patient.save();
 
-    res.json({ message: 'Note deleted successfully' });
+    // Return updated patient with populated dentist info
+    const updatedPatient = await Patient.findById(req.params.patientId)
+      .populate('clinicalNotes.dentist', 'username');
+    res.json(updatedPatient);
   } catch (error) {
+    console.error('Error deleting note:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-/**
- * DELETE patient
- */
+// DELETE patient - removes patient and all associated data
 router.delete('/:id', protect, validateMongoId, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -203,9 +216,44 @@ router.delete('/:id', protect, validateMongoId, async (req, res) => {
   }
 });
 
-/**
- * UPDATE treatment plan status
- */
+// CREATE treatment plan - adds a new treatment plan to patient
+router.post('/:patientId/treatment-plans', protect, async (req, res) => {
+  try {
+    const patient = await Patient.findOne({
+      _id: req.params.patientId,
+      organizationId: req.organizationId
+    });
+
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    const { toothNumber, surface, procedure, cost } = req.body;
+
+    if (!procedure) {
+      return res.status(400).json({ message: 'Procedure is required' });
+    }
+
+    const newPlan = {
+      toothNumber: toothNumber || null,
+      surface: surface || null,
+      procedure,
+      cost: cost || null,
+      status: 'Proposed',
+      createdAt: new Date()
+    };
+
+    patient.treatmentPlans.push(newPlan);
+    await patient.save();
+
+    res.status(201).json(patient);
+  } catch (error) {
+    console.error('Error creating treatment plan:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// UPDATE treatment plan status - modifies proposal lifecycle
 router.patch('/:patientId/treatment-plans/:planId', protect, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -217,7 +265,7 @@ router.patch('/:patientId/treatment-plans/:planId', protect, async (req, res) =>
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    // Find the treatment plan
+    // Find the treatment plan by ID in the array
     const planIndex = patient.treatmentPlans.findIndex(plan => plan._id.toString() === req.params.planId);
     if (planIndex === -1) {
       return res.status(404).json({ message: 'Treatment plan not found' });
@@ -235,9 +283,7 @@ router.patch('/:patientId/treatment-plans/:planId', protect, async (req, res) =>
   }
 });
 
-/**
- * UPDATE dental chart tooth
- */
+// UPDATE dental chart tooth - supports both permanent (1-32) and primary (A-T) teeth
 router.put('/:patientId/dental-chart/:toothNumber', protect, async (req, res) => {
   try {
     const patient = await Patient.findOne({ 
@@ -249,18 +295,32 @@ router.put('/:patientId/dental-chart/:toothNumber', protect, async (req, res) =>
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    const toothNumber = parseInt(req.params.toothNumber);
-    if (toothNumber < 1 || toothNumber > 32) {
-      return res.status(400).json({ message: 'Invalid tooth number. Must be between 1 and 32.' });
+    // Support both numeric (1-32 permanent) and letter (A-T primary) tooth numbers
+    let toothNumber = req.params.toothNumber;
+    
+    // If it's a numeric string, convert to number for comparison
+    const isNumericTooth = !isNaN(toothNumber);
+    const toothNumForComparison = isNumericTooth ? parseInt(toothNumber) : toothNumber;
+    
+    // Validate tooth number - either numeric (1-32) or letter (A-T, case-insensitive)
+    const validNumericTeeth = toothNumForComparison >= 1 && toothNumForComparison <= 32;
+    const validLetterTeeth = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T']
+      .includes(toothNumber.toUpperCase());
+    
+    if (!validNumericTeeth && !validLetterTeeth) {
+      return res.status(400).json({ message: 'Invalid tooth number. Use numbers 1-32 for permanent teeth or A-T for primary teeth.' });
     }
-
+    
+    // Use uppercase for letter teeth to ensure consistent storage
+    const normalizedToothNumber = isNumericTooth ? toothNumForComparison : toothNumber.toUpperCase();
+    
     // Initialize dental chart if it doesn't exist
     if (!patient.dentalChart) {
       patient.dentalChart = { teeth: [] };
     }
 
     // Find existing tooth or create new entry
-    let tooth = patient.dentalChart.teeth.find(t => t.number === toothNumber);
+    let tooth = patient.dentalChart.teeth.find(t => t.number === normalizedToothNumber);
     
     if (tooth) {
       tooth.status = req.body.status || tooth.status;
@@ -281,7 +341,7 @@ router.put('/:patientId/dental-chart/:toothNumber', protect, async (req, res) =>
       tooth.lastUpdated = new Date();
     } else {
       patient.dentalChart.teeth.push({
-        number: toothNumber,
+        number: normalizedToothNumber,
         status: req.body.status || 'healthy',
         surfaces: req.body.surfaces || {
           mesial: { status: 'healthy', notes: '' },
@@ -303,6 +363,7 @@ router.put('/:patientId/dental-chart/:toothNumber', protect, async (req, res) =>
 
     res.json(updatedPatient);
   } catch (error) {
+    console.error('Error updating dental chart:', error);
     res.status(500).json({ message: error.message });
   }
 });

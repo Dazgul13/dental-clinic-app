@@ -30,6 +30,10 @@ build/
 *.tsbuildinfo
 
 # Testing
+test_patient.js
+test-api.js
+test.txt
+test.js
 coverage/
 
 # Misc

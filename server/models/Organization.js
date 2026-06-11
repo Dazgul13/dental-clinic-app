@@ -17,6 +17,27 @@ const organizationSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Status flag for administrative approval workflow
+  // - Pending: Organization signed up but awaiting admin approval
+  // - Approved: Organization can access the platform
+  // - Suspended: Organization access revoked (violations, non-payment, etc.)
+  // SECURITY: Login will be blocked if status is not Approved
+  status: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Suspended'],
+    default: 'Pending',
+    index: true
+  },
+  // Unique slug for secure clinic lookup - prevents enumeration attacks
+  // SECURITY: Used instead of public dropdown to avoid exposing organization list
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: /^[a-z0-9-]+$/ // Only lowercase letters, numbers, hyphens for URL safety
+  },
   address: {
     street: String,
     city: String,

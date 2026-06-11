@@ -6,6 +6,7 @@ const { validateAppointment, validateMongoId } = require('../middleware/validati
 
 /**
  * GET all appointments (filter by date/status)
+ * SECURITY: RLAC middleware automatically filters by createdBy for staff users
  */
 router.get('/', protect, async (req, res) => {
   try {
@@ -13,13 +14,11 @@ router.get('/', protect, async (req, res) => {
     let query = { organizationId: req.organizationId };
 
     if (startDate && endDate) {
-      // Date range query for week view
       const start = new Date(startDate);
       const end = new Date(endDate);
-      end.setDate(end.getDate() + 1); // Include the end date
+      end.setDate(end.getDate() + 1);
       query.date = { $gte: start, $lt: end };
     } else if (date) {
-      // Single date query
       const startDate = new Date(date);
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
@@ -30,7 +29,8 @@ router.get('/', protect, async (req, res) => {
       query.status = status;
     }
 
-    const appointments = await Appointment.find(query)
+    // SECURITY: Pass user context for RLAC filtering in pre-find hook
+    const appointments = await Appointment.find(query, null, { userContext: { role: req.user.role, userId: req.user._id } })
       .populate('patientId', 'firstName lastName phone email')
       .populate('dentistId', 'username')
       .sort({ date: 1 });
@@ -43,13 +43,17 @@ router.get('/', protect, async (req, res) => {
 
 /**
  * CREATE appointment
+ * SECURITY: Sets createdBy to the authenticated user for RLAC tracking
  */
 router.post('/', protect, validateAppointment, async (req, res) => {
   try {
     const { patientId, dentistId, date, status, notes } = req.body;
 
+    // SECURITY: createdBy is set to the authenticated user ID
+    // This enables Row-Level Access Control (RLAC) for data segregation
     const appointment = await Appointment.create({
       organizationId: req.organizationId,
+      createdBy: req.user._id,
       patientId,
       dentistId,
       date,
@@ -69,24 +73,20 @@ router.post('/', protect, validateAppointment, async (req, res) => {
 
 /**
  * UPDATE appointment
- * Editable:
- * - date
- * - status
- * - dentistId
- * - notes
+ * SECURITY: RLAC ensures staff can only update appointments they created
  */
 router.put('/:id', protect, validateMongoId, async (req, res) => {
   try {
+    // SECURITY: Pass user context for RLAC filtering in pre-findOne hook
     const appointment = await Appointment.findOne({ 
       _id: req.params.id, 
       organizationId: req.organizationId 
-    });
+    }, null, { userContext: { role: req.user.role, userId: req.user._id } });
 
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
 
-    // Editable fields
     if (req.body.date) appointment.date = req.body.date;
     if (req.body.status) appointment.status = req.body.status;
     if (req.body.dentistId) appointment.dentistId = req.body.dentistId;
@@ -126,19 +126,21 @@ router.delete('/:id', protect, validateMongoId, async (req, res) => {
 });
 
 // GET UPCOMING APPOINTMENTS (NOW → NEXT 3 DAYS)
+// SECURITY: RLAC middleware automatically filters by createdBy for staff users
 router.get('/upcoming', protect, async (req, res) => {
   try {
     const now = new Date();
     const threeDaysLater = new Date();
     threeDaysLater.setDate(now.getDate() + 3);
 
+    // SECURITY: Pass user context for RLAC filtering in pre-find hook
     const appointments = await Appointment.find({
       organizationId: req.organizationId,
       date: {
         $gte: now,
         $lte: threeDaysLater
       }
-    })
+    }, null, { userContext: { role: req.user.role, userId: req.user._id } })
       .populate('patientId', 'firstName lastName phone email')
       .populate('dentistId', 'username')
       .sort({ date: 1 });

@@ -20,6 +20,8 @@ const seedData = async () => {
       name: 'Demo Dental Clinic',
       email: 'info@demodental.com',
       phone: '(555) 000-0000',
+      slug: 'demo-dental-clinic',
+      status: 'Approved',
       address: {
         street: '100 Main Street',
         city: 'Springfield',
@@ -178,7 +180,7 @@ const seedData = async () => {
     ]);
     
     console.log('✅ Seed data created successfully!');
-    console.log('🏢 Organization: Demo Dental Clinic');
+    console.log('🏢 Organization: Demo Dental Clinic (slug: demo-dental-clinic)');
     console.log('👤 Admin user: admin / Admin123!');
     console.log('👤 Staff user: staff / Staff123!');
     console.log(`👥 Created ${patients.length} sample patients`);

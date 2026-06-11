@@ -68,8 +68,8 @@ const Register = () => {
      });
 
     if (result.success) {
-      toast.success('Account created! Welcome to your clinic dashboard.');
-      navigate('/dashboard');
+      toast.success('Clinic registered! Awaiting system administrator approval.');
+      navigate('/login?pending=true');
     } else {
       setError(result.message);
       toast.error(result.message);
@@ -88,7 +88,7 @@ const Register = () => {
               Dental Clinic Management
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Register your clinic to get started
+              Clinic registration requires system administrator approval
             </p>
           </div>
 

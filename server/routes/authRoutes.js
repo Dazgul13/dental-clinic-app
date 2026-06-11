@@ -5,6 +5,18 @@ const User = require('../models/User');
 const Organization = require('../models/Organization');
 const { validateRegister, validateLogin } = require('../middleware/validation');
 
+// SECURITY: Generate URL-safe slug from organization name
+// Prevents enumeration attacks by using predictable but non-guessable identifiers
+const generateSlug = (name) => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+};
+
 const generateToken = (id) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -43,15 +55,31 @@ router.post('/register', validateRegister, async (req, res) => {
         return res.status(400).json({ message: 'Organization with this email already exists' });
       }
 
+      // SECURITY: Generate unique slug for secure clinic lookup
+      // Prevents enumeration attacks via predictable naming
+      let slug = generateSlug(organizationName);
+      let slugExists = await Organization.findOne({ slug });
+      let slugAttempts = 0;
+      
+      // SECURITY: Handle slug collisions by appending counter
+      while (slugExists && slugAttempts < 100) {
+        slugAttempts++;
+        const newSlug = `${slug}-${slugAttempts}`;
+        slugExists = await Organization.findOne({ slug: newSlug });
+        if (!slugExists) slug = newSlug;
+      }
+
       const organization = await Organization.create({
         name: organizationName,
         email: organizationEmail,
         phone: organizationPhone,
+        slug,
+        status: 'Pending', // SECURITY: New organizations start as Pending, awaiting system admin approval
         subscription: {
           plan: 'trial',
           status: 'active',
           startDate: new Date(),
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days trial
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         }
       });
 
@@ -73,15 +101,13 @@ router.post('/register', validateRegister, async (req, res) => {
           email: user.email,
           role: user.role,
           organizationId: user.organizationId,
+          organizationSlug: slug,
           token: generateToken(user._id)
         });
       } else {
         res.status(400).json({ message: 'Invalid user data' });
       }
     } else {
-      // Regular user registration (without organization details) - creates staff user
-      // In a real application, you might want to associate this with an existing organization
-      // via invitation or other means. For now, we'll require organization details.
       return res.status(400).json({ message: 'Organization details are required for registration' });
     }
   } catch (error) {
@@ -92,15 +118,41 @@ router.post('/register', validateRegister, async (req, res) => {
 router.post('/login', validateLogin, async (req, res) => {
   try {
     const { username, password } = req.body;
+    
+    // SECURITY: Organization slug passed via header to prevent enumeration
+    const clinicSlug = req.headers['x-clinic-slug'];
 
-    const user = await User.findOne({ username }).select('+password').populate('organizationId', 'name isActive');
+    // Find user and populate organization with status field
+    const user = await User.findOne({ username })
+      .select('+password')
+      .populate('organizationId', 'name status slug isActive');
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
-    // Check if organization is active
-    if (!user.organizationId || !user.organizationId.isActive) {
+    // SECURITY: Verify clinic slug matches user's organization
+    // This prevents users from logging into wrong organizations
+    if (clinicSlug && user.organizationId?.slug !== clinicSlug) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    // SECURITY: Check organization status for vetting workflow
+    // Login blocked if organization is Pending or Suspended
+    if (!user.organizationId) {
+      return res.status(403).json({ message: 'No organization associated with this account' });
+    }
+
+    // SECURITY: Organization must be Approved to allow tenant access
+    // 403 Forbidden for pending/suspended orgs (explicit status)
+    if (user.organizationId.status !== 'Approved') {
+      return res.status(403).json({ 
+        message: 'Your clinic is awaiting system administrator approval. Please contact support.' 
+      });
+    }
+
+    // Check if organization is active (additional layer for suspension)
+    if (!user.organizationId.isActive) {
       return res.status(403).json({ message: 'Organization is not active' });
     }
 

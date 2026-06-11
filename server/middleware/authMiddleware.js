@@ -13,21 +13,35 @@ const protect = async (req, res, next) => {
         return res.status(500).json({ message: 'Server configuration error' });
       }
       const decoded = jwt.verify(token, secret);
-      
+
       // Get user with organization
-      req.user = await User.findById(decoded.id).select('-password');
-      
+      req.user = await User.findById(decoded.id).select('-password').populate('organizationId', 'name status isActive');
+
       if (!req.user) {
         return res.status(401).json({ message: 'User not found' });
       }
 
-      // Verify organization is active
-      const organization = await Organization.findById(req.user.organizationId);
-      if (!organization || !organization.isActive) {
+      // SECURITY: Verify organization status - block login if Pending or Suspended
+      // This enforces the administrative approval workflow
+      const organization = req.user.organizationId;
+      if (!organization) {
+        return res.status(403).json({ message: 'No organization associated with this account' });
+      }
+
+      // Check organization status for vetting workflow
+      // Status must be 'Approved' for tenant users to access the platform
+      if (organization.status !== 'Approved') {
+        return res.status(403).json({ 
+          message: 'Your clinic is awaiting system administrator approval. Please contact support.' 
+        });
+      }
+
+      // Verify organization is active (additional layer for suspension)
+      if (!organization.isActive) {
         return res.status(403).json({ message: 'Organization is not active' });
       }
 
-      req.organizationId = req.user.organizationId;
+      req.organizationId = req.user.organizationId._id;
       next();
     } catch (error) {
       console.error(error);

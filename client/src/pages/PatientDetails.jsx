@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import DentalChart from '../components/DentalChart';
 import PediatricDentalChart from '../components/PediatricDentalChart';
+import TreatmentPlanList from '../components/TreatmentPlanList';
 
 const PatientDetails = () => {
   const { id } = useParams();
@@ -175,52 +176,46 @@ const PatientDetails = () => {
     setEditNoteText(note.note);
   };
 
-   const handleUpdateNote = async (noteId) => {
-     if (!editNoteText.trim()) {
-       toast.error('Note text cannot be empty');
-       return;
-     }
+  const handleUpdateNote = async (noteId) => {
+    if (!editNoteText.trim()) {
+      toast.error('Note text cannot be empty');
+      return;
+    }
 
-     console.log('Updating note:', noteId, 'with text:', editNoteText);
-     setUpdatingNote(true);
-     try {
-       const { data } = await api.put(`/patients/${id}/notes/${noteId}`, { text: editNoteText });
-       console.log('Note update response:', data);
-       setPatient(data);
-       setEditingNote(null);
-       setEditNoteText('');
-       toast.success('Note updated successfully');
-     } catch (error) {
-       console.error('Error updating note:', error);
-       console.error('Error response:', error.response?.data);
-       toast.error(error.response?.data?.message || 'Failed to update note');
-     } finally {
-       setUpdatingNote(false);
-     }
-   };
+    setUpdatingNote(true);
+    try {
+      const { data } = await api.put(`/patients/${id}/notes/${noteId}`, { text: editNoteText });
+      setPatient(data);
+      setEditingNote(null);
+      setEditNoteText('');
+      toast.success('Note updated successfully');
+    } catch (error) {
+      console.error('Error updating note:', error);
+      toast.error(error.response?.data?.message || 'Failed to update note');
+    } finally {
+      setUpdatingNote(false);
+    }
+  };
 
-   // Handle treatment plan status updates
-   const handleUpdateTreatmentStatus = async (updatedPatient) => {
-     setPatient(updatedPatient);
-     toast.success('Treatment plan updated');
-   };
+  // Handle treatment plan status updates
+  const handleUpdateTreatmentStatus = async (updatedPatient) => {
+    setPatient(updatedPatient);
+    toast.success('Treatment plan updated');
+  };
 
   const handleDeleteNote = async (noteId) => {
     if (!window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
       return;
     }
 
-    console.log('Deleting note:', noteId);
     setDeletingNote(noteId);
     try {
-      const response = await api.delete(`/patients/${id}/notes/${noteId}`);
-      console.log('Note delete response:', response.data);
+      await api.delete(`/patients/${id}/notes/${noteId}`);
       // Refresh patient data to get updated notes
       fetchPatient();
       toast.success('Note deleted successfully');
     } catch (error) {
       console.error('Error deleting note:', error);
-      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.message || 'Failed to delete note');
     } finally {
       setDeletingNote(null);
@@ -276,7 +271,7 @@ const PatientDetails = () => {
 
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6">
         <button
           onClick={() => navigate('/dashboard/patients')}
           className="text-primary-600 hover:text-primary-800 flex items-center"
@@ -286,289 +281,166 @@ const PatientDetails = () => {
           </svg>
           Back to Patients
         </button>
-        
-        {!isEditing && (
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Edit Patient
-            </button>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete Patient
-            </button>
-          </div>
-        )}
       </div>
 
-       {/* Tabs */}
-       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-         <div className="border-b border-gray-200">
-           <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
-             <button
-               onClick={() => setActiveTab('info')}
-               className={`${
-                 activeTab === 'info'
-                   ? 'border-primary-500 text-primary-600'
-                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-             >
-               Patient Information
-             </button>
-             <button
-               onClick={() => setActiveTab('dental')}
-               className={`${
-                 activeTab === 'dental'
-                   ? 'border-primary-500 text-primary-600'
-                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-             >
-               Dental Chart
-             </button>
-             <button
-               onClick={() => setActiveTab('treatment')}
-               className={`${
-                 activeTab === 'treatment'
-                   ? 'border-primary-500 text-primary-600'
-                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-             >
-               Treatment Plan
-             </button>
-             <button
-               onClick={() => setActiveTab('notes')}
-               className={`${
-                 activeTab === 'notes'
-                   ? 'border-primary-500 text-primary-600'
-                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-             >
-               Clinical Notes ({patient.clinicalNotes?.length || 0})
-             </button>
-           </nav>
-         </div>
+      {/* Tabs */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('info')}
+              className={`${
+                activeTab === 'info'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Patient Information
+            </button>
+            <button
+              onClick={() => setActiveTab('dental')}
+              className={`${
+                activeTab === 'dental'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Dental Chart
+            </button>
+            <button
+              onClick={() => setActiveTab('treatment')}
+              className={`${
+                activeTab === 'treatment'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Treatment Plan
+            </button>
+            <button
+              onClick={() => setActiveTab('notes')}
+              className={`${
+                activeTab === 'notes'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Clinical Notes ({patient.clinicalNotes?.length || 0})
+            </button>
+          </nav>
+        </div>
 
-         {/* Tab Content */}
-         <div className="p-6">
-           {/* Patient Information Tab */}
-           {activeTab === 'info' && (
-             <div>
-               <div className="flex justify-between items-center mb-4">
-                 <div>
-                   <h3 className="text-2xl leading-6 font-bold text-gray-900">
-                     {patient.firstName} {patient.lastName}
-                   </h3>
-                   <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal and medical information</p>
-                 </div>
-                 {isEditing && (
-                   <div className="flex space-x-2">
-                     <button
-                       onClick={handleCancelEdit}
-                       className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                     >
-                       Cancel
-                     </button>
-                     <button
-                       onClick={handleSaveEdit}
-                       disabled={saving}
-                       className="px-3 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                     >
-                       {saving ? 'Saving...' : 'Save'}
-                     </button>
-                   </div>
-                 )}
-               </div>
-           {isEditing ? (
-             <form onSubmit={handleSaveEdit} className="space-y-6 p-6">
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                   <input
-                     type="text"
-                     name="firstName"
-                     required
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                     value={editForm.firstName}
-                     onChange={handleEditChange}
-                   />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                   <input
-                     type="text"
-                     name="lastName"
-                     required
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                     value={editForm.lastName}
-                     onChange={handleEditChange}
-                   />
-                 </div>
-               </div>
- 
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                 <input
-                   type="date"
-                   name="dob"
-                   required
-                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                   value={editForm.dob}
-                   onChange={handleEditChange}
-                 />
-               </div>
- 
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                   <input
-                     type="tel"
-                     name="phone"
-                     required
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                     value={editForm.phone}
-                     onChange={handleEditChange}
-                   />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                   <input
-                     type="email"
-                     name="email"
-                     required
-                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                     value={editForm.email}
-                     onChange={handleEditChange}
-                   />
-                 </div>
-               </div>
- 
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Allergies (comma-separated)
-                 </label>
-                 <input
-                   type="text"
-                   name="allergies"
-                   placeholder="e.g., Penicillin, Latex"
-                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                   value={editForm.allergies}
-                   onChange={handleEditChange}
-                 />
-               </div>
- 
-               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   Medical Conditions (comma-separated)
-                 </label>
-                 <input
-                   type="text"
-                   name="conditions"
-                   placeholder="e.g., Diabetes, Hypertension"
-                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                   value={editForm.conditions}
-                   onChange={handleEditChange}
-                 />
-               </div>
-             </form>
-           ) : (
-             <dl className="sm:divide-y sm:divide-gray-200">
-               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                 <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
-                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formatDate(patient.dob)}</dd>
-               </div>
-               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                 <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.phone}</dd>
-               </div>
-               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                 <dt className="text-sm font-medium text-gray-500">Email</dt>
-                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.email}</dd>
-               </div>
-               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                 <dt className="text-sm font-medium text-gray-500">Allergies</dt>
-                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                   {patient.medicalHistory?.allergies?.length > 0 ? (
-                     <div className="flex flex-wrap gap-2">
-                       {patient.medicalHistory.allergies.map((allergy, index) => (
-                         <span key={index} className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
-                           {allergy}
-                         </span>
-                       ))}
-                     </div>
-                   ) : (
-                     <span className="text-gray-400">None reported</span>
-                   )}
-                 </dd>
-               </div>
-               <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                 <dt className="text-sm font-medium text-gray-500">Medical Conditions</dt>
-                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                   {patient.medicalHistory?.conditions?.length > 0 ? (
-                     <div className="flex flex-wrap gap-2">
-                       {patient.medicalHistory.conditions.map((condition, index) => (
-                         <span key={index} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
-                           {condition}
-                         </span>
-                       ))}
-                     </div>
-                   ) : (
-                     <span className="text-gray-400">None reported</span>
-                   )}
-                 </dd>
-               </div>
-             </dl>
-           )}
-             </div>
-           )}
-           {/* Dental Chart Tab */}
-           {activeTab === 'dental' && (
-             <div>
-               {/* Pediatric vs Standard Chart Switcher */}
-               {patient && patient.age <= 7 ? (
-                 <>
-                   <div className="bg-blue-50 p-2 text-blue-800 text-xs font-semibold rounded mb-4">
-                     👶 Pediatric View Active (Primary Teeth Charting) - Age: {patient.age}
-                   </div>
-                   <PediatricDentalChart 
-                     patientId={id}
-                     dentalChart={patient.dentalChart}
-                     onUpdate={handleDentalChartUpdate}
-                   />
-                 </>
-               ) : (
-                 <>
-                   <div className="bg-green-50 p-2 text-green-800 text-xs font-semibold rounded mb-4">
-                     🦷 Standard View Active (Permanent Teeth Charting) - Age: {patient.age}
-                   </div>
-                   <DentalChart 
-                     patientId={id}
-                     dentalChart={patient.dentalChart}
-                     onUpdate={handleDentalChartUpdate}
-                   />
-                 </>
-               )}
-             </div>
-           )}
-           {/* Treatment Plan Tab */}
-           {activeTab === 'treatment' && (
-             <TreatmentPlanList 
-               patientId={id} 
-               treatments={patient?.treatmentPlans || []}
-               onUpdateStatus={handleUpdateTreatmentStatus}
-             />
-           )}
-           {/* Clinical Notes Tab */}
-           {activeTab === 'notes' && (
+        {/* Tab Content */}
+        <div className="p-6">
+          {/* Patient Information Tab */}
+          {activeTab === 'info' && (
+            <>
+              <dl className="sm:divide-y sm:divide-gray-200">
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formatDate(patient.dob)}</dd>
+                </div>
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.phone}</dd>
+                </div>
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Email</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{patient.email}</dd>
+                </div>
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Allergies</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {patient.medicalHistory?.allergies?.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {patient.medicalHistory.allergies.map((allergy, index) => (
+                          <span key={index} className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                            {allergy}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">None reported</span>
+                    )}
+                  </dd>
+                </div>
+                <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Medical Conditions</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    {patient.medicalHistory?.conditions?.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {patient.medicalHistory.conditions.map((condition, index) => (
+                          <span key={index} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                            {condition}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">None reported</span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+              <div className="mt-6 flex space-x-3">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Patient
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete Patient
+                </button>
+              </div>
+            </>
+          )}
+          {/* Dental Chart Tab */}
+          {activeTab === 'dental' && (
+            <div>
+              {patient && patient.age != null && patient.age <= 7 ? (
+                <>
+                  <div className="bg-blue-50 p-2 text-blue-800 text-xs font-semibold rounded mb-4">
+                    👶 Pediatric View Active (Primary Teeth Charting) - Age: {patient.age}
+                  </div>
+                  <PediatricDentalChart
+                    patientId={id}
+                    dentalChart={patient.dentalChart}
+                    onUpdate={handleDentalChartUpdate}
+                  />
+                </>
+              ) : (
+                <>
+                  <div className="bg-green-50 p-2 text-green-800 text-xs font-semibold rounded mb-4">
+                    🦷 Standard View Active (Permanent Teeth Charting) - Age: {patient?.age ?? 'Unknown'}
+                  </div>
+                  <DentalChart
+                    patientId={id}
+                    dentalChart={patient.dentalChart}
+                    onUpdate={handleDentalChartUpdate}
+                  />
+                </>
+              )}
+            </div>
+          )}
+          {/* Treatment Plan Tab */}
+          {activeTab === 'treatment' && (
+            <TreatmentPlanList
+              patientId={id}
+              treatments={patient?.treatmentPlans || []}
+              onUpdateStatus={handleUpdateTreatmentStatus}
+            />
+          )}
+          {/* Clinical Notes Tab */}
+          {activeTab === 'notes' && (
             <div>
               <form onSubmit={handleAddNote} className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Add New Note</label>
@@ -587,80 +459,75 @@ const PatientDetails = () => {
                   {addingNote ? 'Adding...' : 'Add Note'}
                 </button>
               </form>
-
               <div className="space-y-4">
                 {currentNotes.length > 0 ? (
-                  currentNotes.map((note) => {
-                    console.log('Rendering note:', note._id, note.note);
-                    return (
-                      <div key={note._id} className="bg-gray-50 p-4 rounded-lg">
-                        {editingNote === note._id ? (
-                          <div className="space-y-3">
-                            <textarea
-                              rows="3"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-                              value={editNoteText}
-                              onChange={(e) => setEditNoteText(e.target.value)}
-                            />
-                            <div className="flex space-x-2">
+                  currentNotes.map((note) => (
+                    <div key={note._id} className="bg-gray-50 p-4 rounded-lg">
+                      {editingNote === note._id ? (
+                        <div className="space-y-3">
+                          <textarea
+                            rows="3"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+                            value={editNoteText}
+                            onChange={(e) => setEditNoteText(e.target.value)}
+                          />
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleUpdateNote(note._id)}
+                              disabled={updatingNote}
+                              className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50"
+                            >
+                              {updatingNote ? 'Saving...' : 'Save'}
+                            </button>
+                            <button
+                              onClick={handleCancelEditNote}
+                              className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-400"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-between items-start mb-2">
+                            <p className="text-sm text-gray-900 flex-1">{note.note}</p>
+                            <div className="flex space-x-2 ml-4">
                               <button
-                                onClick={() => handleUpdateNote(note._id)}
-                                disabled={updatingNote}
-                                className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50"
+                                onClick={() => handleEditNote(note)}
+                                className="text-blue-600 hover:text-blue-800 text-xs"
                               >
-                                {updatingNote ? 'Saving...' : 'Save'}
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
                               </button>
                               <button
-                                onClick={handleCancelEditNote}
-                                className="px-3 py-1 bg-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-400"
+                                onClick={() => handleDeleteNote(note._id)}
+                                disabled={deletingNote === note._id}
+                                className="text-red-600 hover:text-red-800 text-xs disabled:opacity-50"
                               >
-                                Cancel
+                                {deletingNote === note._id ? (
+                                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                )}
                               </button>
                             </div>
                           </div>
-                        ) : (
-                          <>
-                            <div className="flex justify-between items-start mb-2">
-                              <p className="text-sm text-gray-900 flex-1">{note.note}</p>
-                              <div className="flex space-x-2 ml-4">
-                                <button
-                                  onClick={() => handleEditNote(note)}
-                                  className="text-blue-600 hover:text-blue-800 text-xs"
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteNote(note._id)}
-                                  disabled={deletingNote === note._id}
-                                  className="text-red-600 hover:text-red-800 text-xs disabled:opacity-50"
-                                >
-                                  {deletingNote === note._id ? (
-                                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></div>
-                                  ) : (
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-                            <div className="flex items-center text-xs text-gray-500">
-                              <span className="font-medium">{note.dentist?.username || 'Unknown'}</span>
-                              <span className="mx-2">•</span>
-                              <span>{formatDateTime(note.date)}</span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    );
-                  })
+                          <div className="flex items-center text-xs text-gray-500">
+                            <span className="font-medium">{note.dentist?.username || 'Unknown'}</span>
+                            <span className="mx-2">•</span>
+                            <span>{formatDateTime(note.date)}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
                 ) : (
                   <p className="text-gray-500 text-sm">No notes yet. Add the first note above.</p>
                 )}
               </div>
-
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
