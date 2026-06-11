@@ -7,6 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { Navbar } from '../pages/Home';
+import api from '../utils/api';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -31,13 +32,7 @@ const Login = () => {
     setError('');
 
     try {
-      const res = await fetch('/api/organization/verify-slug', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: clinicSlug })
-      });
-
-      const data = await res.json();
+      const { data } = await api.post('/organization/verify-slug', { slug: clinicSlug });
 
       if (data.valid) {
         setSlugVerified(true);
