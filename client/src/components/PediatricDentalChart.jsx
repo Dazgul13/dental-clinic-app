@@ -219,9 +219,10 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
         onClick={() => handleToothClick(toothNumber)}
         className={`
           relative w-10 h-12 border-2 rounded-lg flex items-center justify-center
-          text-xs font-semibold transition-all hover:scale-110
+          text-xs font-semibold transition-all
           ${getToothColor(tooth.status)}
-          ${isSelected ? 'ring-2 ring-primary-500 scale-110' : ''}
+          ${isSelected ? 'ring-2 ring-primary-500' : ''}
+          hover:shadow-md hover:-translate-y-0.5
         `}
         title={`Primary Tooth #${toothNumber} - ${tooth.status}`}
       >
