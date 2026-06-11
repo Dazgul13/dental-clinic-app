@@ -126,50 +126,52 @@ const PatientList = () => {
             </p>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                  Date of Birth
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentPatients.map((patient) => (
-                <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-navy-900">
-                      {patient.firstName} {patient.lastName}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">{formatDate(patient.dob)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-navy-900">{patient.phone}</div>
-                    <div className="text-sm text-gray-500">{patient.email}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link
-                      to={`/dashboard/patients/${patient._id}`}
-                      className="text-teal-600 hover:text-teal-800 transition-colors"
-                    >
-                      View Details →
-                    </Link>
-                  </td>
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
+                    Date of Birth
+                  </th>
+                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentPatients.map((patient) => (
+                  <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 sm:px-6 py-4">
+                      <div className="text-sm font-medium text-navy-900">
+                        {patient.firstName} {patient.lastName}
+                      </div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-4">
+                      <div className="text-sm text-gray-600 whitespace-normal">{formatDate(patient.dob)}</div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-4">
+                      <div className="text-sm text-navy-900 whitespace-normal">{patient.phone}</div>
+                      <div className="text-sm text-gray-500 whitespace-normal break-all">{patient.email}</div>
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 text-sm font-medium whitespace-nowrap">
+                      <Link
+                        to={`/dashboard/patients/${patient._id}`}
+                        className="text-teal-600 hover:text-teal-800 transition-colors"
+                      >
+                        View Details →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Pagination Controls - Premium styling */}
