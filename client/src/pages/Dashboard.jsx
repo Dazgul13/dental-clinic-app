@@ -117,35 +117,35 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-4">
               {appointments.map((appointment) => (
-                <div
-                  key={appointment._id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
-                        <span className="text-teal-600 font-medium">
-                          {appointment.patientId?.firstName?.[0]}{appointment.patientId?.lastName?.[0]}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {appointment.patientId?.firstName} {appointment.patientId?.lastName}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {formatTime(appointment.date)} • Dr. {appointment.dentistId?.username}
-                      </p>
+              <div
+                key={appointment._id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                      <span className="text-teal-600 font-medium">
+                        {appointment.patientId?.firstName?.[0]}{appointment.patientId?.lastName?.[0]}
+                      </span>
                     </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    appointment.status === 'scheduled' ? 'bg-teal-100 text-teal-800' :
-                    appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    'bg-amber-100 text-amber-800'
-                  }`}>
-                    {appointment.status}
-                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {appointment.patientId?.firstName} {appointment.patientId?.lastName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {formatTime(appointment.date)} • Dr. {appointment.dentistId?.username}
+                    </p>
+                  </div>
                 </div>
+                <span className={`self-start sm:self-auto px-3 py-1 rounded-full text-xs font-medium ${
+                  appointment.status === 'scheduled' ? 'bg-teal-100 text-teal-800' :
+                  appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                  'bg-amber-100 text-amber-800'
+                }`}>
+                  {appointment.status}
+                </span>
+              </div>
               ))}
             </div>
           )}

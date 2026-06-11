@@ -177,27 +177,27 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
           </form>
         )}
 
-        {/* Treatment Plans Table - Compact readable layout */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+        {/* Treatment Plans Table */}
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <table className="min-w-[640px] divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Procedure
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Tooth / Surface
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Cost
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Created
                 </th>
-                <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-3 sm:px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
@@ -205,25 +205,94 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {treatments.length > 0 ? (
                 treatments.map((plan, idx) => (
-                  <tr key={plan._id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                    <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-gray-900">{plan.procedure}</div>
+                  <tr key={`${plan.patientId}-${plan._id}`} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                    <td className="px-3 sm:px-4 py-3">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900 break-words">{plan.procedure}</div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-gray-900">
+                    <td className="px-3 sm:px-4 py-3">
+                      <div className="text-xs sm:text-sm text-gray-900 flex flex-wrap gap-1">
                         {plan.toothNumber ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                             {plan.toothNumber}
                           </span>
                         ) : (
                           <span className="text-gray-400 text-xs">Full arch</span>
                         )}
                         {plan.surface && (
-                          <span className="ml-1.5 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
                             {plan.surface}
                           </span>
                         )}
                       </div>
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-semibold text-gray-900">
+                        {plan.cost
+                          ? `₱${plan.cost.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : <span className="text-gray-400 font-normal">—</span>
+                        }
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(plan.status)}`}>
+                        {plan.status}
+                      </span>
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-xs text-gray-500">
+                      {formatDate(plan.createdAt)}
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-right text-xs sm:text-sm">
+                      {plan.status !== 'Completed' && plan.status !== 'Cancelled' && (
+                        <div className="flex items-center justify-end space-x-1 sm:space-x-2">
+                          {plan.status === 'Proposed' && (
+                            <button
+                              onClick={() => handleUpdateStatus(plan._id, 'In Progress')}
+                              disabled={updating === plan._id}
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 disabled:opacity-50 transition"
+                              title="Start treatment"
+                            >
+                              {updating === plan._id ? '...' : 'Start'}
+                            </button>
+                          )}
+                          {plan.status === 'In Progress' && (
+                            <button
+                              onClick={() => handleUpdateStatus(plan._id, 'Completed')}
+                              disabled={updating === plan._id}
+                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50 transition"
+                              title="Mark as completed"
+                            >
+                              {updating === plan._id ? '...' : 'Complete'}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleUpdateStatus(plan._id, 'Cancelled')}
+                            disabled={updating === plan._id}
+                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 transition"
+                            title="Cancel plan"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-4 py-10 text-center">
+                    <div className="flex flex-col items-center">
+                      <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <p className="text-xs sm:text-sm text-gray-500 font-medium">No treatment plans yet</p>
+                      <p className="text-xs text-gray-400 mt-1">Click "Add Plan" to create one.</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm font-semibold text-gray-900">

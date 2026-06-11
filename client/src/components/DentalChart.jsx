@@ -260,17 +260,17 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Dental Chart */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Dental Chart</h3>
+      <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200 overflow-x-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+          <h3 className="text-base sm:text-lg font-semibold">Dental Chart</h3>
           
           {/* View Mode Toggle */}
-          <div className="flex rounded-md shadow-sm">
+          <div className="flex rounded-md shadow-sm self-start">
             <button
               onClick={() => setViewMode('full')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-md border ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-l-md border ${
                 viewMode === 'full'
                   ? 'bg-primary-600 text-white border-primary-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -280,7 +280,7 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
             </button>
             <button
               onClick={() => setViewMode('quadrants')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-r-md border-t border-r border-b ${
                 viewMode === 'quadrants'
                   ? 'bg-primary-600 text-white border-primary-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -295,13 +295,13 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
           <>
             {/* Full Mouth View */}
             {/* Upper Teeth */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <div className="text-xs text-gray-500 mb-2 text-center">Upper Teeth</div>
-              <div className="flex justify-center gap-8">
+              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
                 <div className="flex gap-1">
                   {upperTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-8"></div>
+                <div className="w-4 sm:w-8 flex-shrink-0"></div>
                 <div className="flex gap-1">
                   {upperTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
@@ -310,11 +310,11 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
 
             {/* Lower Teeth */}
             <div>
-              <div className="flex justify-center gap-8">
+              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
                 <div className="flex gap-1">
                   {lowerTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-8"></div>
+                <div className="w-4 sm:w-8 flex-shrink-0"></div>
                 <div className="flex gap-1">
                   {lowerTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
@@ -325,7 +325,7 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
         ) : (
           <>
             {/* Quadrants View */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Upper Quadrants */}
               {renderQuadrant(1)}
               {renderQuadrant(2)}

@@ -248,17 +248,17 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Dental Chart Header with View Toggle */}
-      <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Primary Dental Chart (Baby Teeth)</h3>
+      <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200 overflow-x-auto">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+          <h3 className="text-base sm:text-lg font-semibold">Primary Dental Chart (Baby Teeth)</h3>
           
-          {/* View Mode Toggle - Full Mouth vs Quadrants */}
-          <div className="flex rounded-md shadow-sm">
+          {/* View Mode Toggle */}
+          <div className="flex rounded-md shadow-sm self-start">
             <button
               onClick={() => setViewMode('full')}
-              className={`px-4 py-2 text-sm font-medium rounded-l-md border ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-l-md border ${
                 viewMode === 'full'
                   ? 'bg-primary-600 text-white border-primary-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -268,7 +268,7 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
             </button>
             <button
               onClick={() => setViewMode('quadrants')}
-              className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-r-md border-t border-r border-b ${
                 viewMode === 'quadrants'
                   ? 'bg-primary-600 text-white border-primary-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -279,30 +279,28 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
           </div>
         </div>
 
-        {/* Full Mouth View - All primary teeth displayed in arch formation */}
+        {/* Full Mouth View */}
         {viewMode === 'full' ? (
           <>
-            {/* Upper Primary Teeth */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <div className="text-xs text-gray-500 mb-2 text-center">Upper Primary Teeth</div>
-              <div className="flex justify-center gap-8">
+              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
                 <div className="flex gap-1">
                   {upperPrimaryTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-8"></div>
+                <div className="w-4 sm:w-8 flex-shrink-0"></div>
                 <div className="flex gap-1">
                   {upperPrimaryTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
               </div>
             </div>
 
-            {/* Lower Primary Teeth */}
             <div>
-              <div className="flex justify-center gap-8">
+              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
                 <div className="flex gap-1">
                   {lowerPrimaryTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-8"></div>
+                <div className="w-4 sm:w-8 flex-shrink-0"></div>
                 <div className="flex gap-1">
                   {lowerPrimaryTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
@@ -311,8 +309,8 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
             </div>
           </>
         ) : (
-          /* Quadrants View - Primary teeth grouped by quadrant */
-          <div className="grid grid-cols-2 gap-4">
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {renderQuadrant(1)}
             {renderQuadrant(2)}
             {renderQuadrant(4)}
