@@ -311,11 +311,12 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {renderQuadrant(1)}
-            {renderQuadrant(2)}
-            {renderQuadrant(4)}
-            {renderQuadrant(3)}
-          </div>
+              {renderQuadrant(1)}
+              {renderQuadrant(2)}
+              {renderQuadrant(4)}
+              {renderQuadrant(3)}
+            </div>
+          </>
         )}
 
         {/* Legend - Color coding explanation */}
