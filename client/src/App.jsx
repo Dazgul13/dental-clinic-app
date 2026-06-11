@@ -9,6 +9,9 @@ import Dashboard from './pages/Dashboard';
 import PatientList from './pages/PatientList';
 import PatientDetails from './pages/PatientDetails';
 import Schedule from './pages/Schedule';
+import ChangePassword from './pages/ChangePassword';
+import SysAdminLogin from './pages/SysAdminLogin';
+import SysAdminDashboard from './pages/SysAdminDashboard';
 import Layout from './components/Layout';
 
 const PrivateRoute = ({ children }) => {
@@ -49,10 +52,15 @@ function App() {
           <Route path="patients" element={<PatientList />} />
           <Route path="patients/:id" element={<PatientDetails />} />
           <Route path="schedule" element={<Schedule />} />
+          <Route path="change-password" element={<ChangePassword />} />
         </Route>
 
         {/* ❌ Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
+
+        {/* System Admin Routes */}
+        <Route path="/sys-admin/login" element={<SysAdminLogin />} />
+        <Route path="/sys-admin/organizations" element={<SysAdminDashboard />} />
       </Routes>
     </Router>
   );

@@ -3,7 +3,8 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
-const { validateRegister, validateLogin } = require('../middleware/validation');
+const { validateRegister, validateLogin, validateChangePassword } = require('../middleware/validation');
+const { protect } = require('../middleware/authMiddleware');
 
 // SECURITY: Generate URL-safe slug from organization name
 // Prevents enumeration attacks by using predictable but non-guessable identifiers
@@ -198,6 +199,30 @@ router.post('/login', validateLogin, async (req, res) => {
       organizationName: user.organizationId.name,
       token: generateToken(user._id)
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// CHANGE PASSWORD for logged-in users
+router.post('/change-password', protect, validateChangePassword, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

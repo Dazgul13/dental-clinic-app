@@ -87,8 +87,6 @@ app.get('/', (req, res) => {
 
 // Apply rate limiters
 app.use('/api/auth', authLimiter, authRoutes);
-// SECURITY: Apply strict rate limiter to verify-slug to prevent enumeration attacks
-app.use('/api/organization/verify-slug', slugVerifyLimiter);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
