@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
@@ -10,7 +10,9 @@ import TreatmentPlanList from '../components/TreatmentPlanList';
 const PatientDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const tabFromUrl = searchParams.get('tab');
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [noteText, setNoteText] = useState('');
@@ -24,7 +26,10 @@ const PatientDetails = () => {
   const [editNoteText, setEditNoteText] = useState('');
   const [updatingNote, setUpdatingNote] = useState(false);
   const [deletingNote, setDeletingNote] = useState(null);
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'notes', 'dental', 'treatment'
+  const [activeTab, setActiveTab] = useState(() => {
+    const allowed = ['info', 'dental', 'treatment', 'notes'];
+    return allowed.includes(tabFromUrl) ? tabFromUrl : 'info';
+  });
   
   // Pagination for notes
   const [currentPage, setCurrentPage] = useState(1);

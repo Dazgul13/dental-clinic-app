@@ -10,6 +10,7 @@ import PatientList from './pages/PatientList';
 import PatientDetails from './pages/PatientDetails';
 import Schedule from './pages/Schedule';
 import ChangePassword from './pages/ChangePassword';
+import AccountSettings from './pages/AccountSettings';
 import SysAdminLogin from './pages/SysAdminLogin';
 import SysAdminDashboard from './pages/SysAdminDashboard';
 import Layout from './components/Layout';
@@ -52,6 +53,7 @@ function App() {
           <Route path="patients" element={<PatientList />} />
           <Route path="patients/:id" element={<PatientDetails />} />
           <Route path="schedule" element={<Schedule />} />
+          <Route path="account-settings" element={<AccountSettings />} />
           <Route path="change-password" element={<ChangePassword />} />
         </Route>
 

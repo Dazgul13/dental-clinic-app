@@ -11,6 +11,7 @@ const Layout = () => {
     { to: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { to: '/dashboard/patients', label: 'Patients', icon: '👥' },
     { to: '/dashboard/schedule', label: 'Schedule', icon: '📅' },
+    { to: '/dashboard/account-settings', label: 'Account Settings', icon: '⚙️' },
   ];
 
   const handleLogout = () => {

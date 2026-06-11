@@ -2,12 +2,13 @@
 // Displays appointments in day, week, or month view with premium calendar styling
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import AppointmentModal from '../components/AppointmentModal';
 
 const Schedule = () => {
-  // State management for appointments and UI
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]); // All fetched appointments
   const [loading, setLoading] = useState(true); // Loading state for API calls
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Currently selected date (YYYY-MM-DD format)
@@ -332,7 +333,15 @@ const Schedule = () => {
                   </div>
                   <div className="p-2 space-y-1">
                     {dayAppointments.map((appointment) => (
-                      <div key={appointment._id} className="text-xs p-2 rounded bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+                      <div
+                        key={appointment._id}
+                        onClick={() => {
+                          if (appointment.patientId?._id) {
+                            navigate(`/dashboard/patients/${appointment.patientId._id}?tab=treatment`);
+                          }
+                        }}
+                        className="text-xs p-2 rounded bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                      >
                         <div className="font-medium text-navy-900 truncate">{appointment.patientId?.firstName} {appointment.patientId?.lastName}</div>
                         <div className="text-gray-500">{formatTime(appointment.date)}</div>
                         <div className="mt-1">
@@ -341,6 +350,7 @@ const Schedule = () => {
                             onChange={(e) => handleStatusUpdate(appointment._id, e.target.value)}
                             disabled={updatingStatus === appointment._id}
                             className={`text-xs px-2 py-1 rounded-full border-0 ${getStatusColor(appointment.status)} ${updatingStatus === appointment._id ? 'opacity-50' : ''} cursor-pointer`}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <option value="scheduled">Scheduled</option>
                             <option value="completed">Completed</option>
@@ -426,7 +436,15 @@ const Schedule = () => {
             ) : (
               <div className="space-y-4">
                 {appointments.map((appointment) => (
-                  <div key={appointment._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                  <div
+                    key={appointment._id}
+                    onClick={() => {
+                      if (appointment.patientId?._id) {
+                        navigate(`/dashboard/patients/${appointment.patientId._id}?tab=treatment`);
+                      }
+                    }}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+                  >
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         <div className="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center">
@@ -444,6 +462,7 @@ const Schedule = () => {
                       onChange={(e) => handleStatusUpdate(appointment._id, e.target.value)}
                       disabled={updatingStatus === appointment._id}
                       className={`px-3 py-1 rounded-full text-xs font-medium border-0 ${getStatusColor(appointment.status)} ${updatingStatus === appointment._id ? 'opacity-50' : ''}`}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <option value="scheduled">Scheduled</option>
                       <option value="completed">Completed</option>
