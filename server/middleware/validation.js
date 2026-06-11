@@ -188,6 +188,7 @@ const validateChangePassword = [
 module.exports = {
   validateRegister,
   validateLogin,
+  validateChangePassword,
   validatePatient,
   validateAppointment,
   validateNote,
