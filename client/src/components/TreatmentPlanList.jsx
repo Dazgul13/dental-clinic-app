@@ -69,6 +69,15 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
     }
   };
 
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Treatment Plan Form */}
