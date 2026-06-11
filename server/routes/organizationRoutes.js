@@ -5,9 +5,9 @@ const User = require('../models/User');
 const { protect } = require('../middleware/authMiddleware');
 const { seatLimiter } = require('../middleware/seatLimiter');
 const { validateRegister } = require('../middleware/validation');
-const { rateLimit } = require('express-rate-limit');
+const createRateLimiter = require('express-rate-limit');
 
-const slugVerifyLimiter = rateLimit({
+const slugVerifyLimiter = createRateLimiter({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: process.env.NODE_ENV === 'production' ? 5 : 20, // Very strict in production
   message: 'Too many verification attempts, please wait before trying again.',
