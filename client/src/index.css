@@ -1,17 +1,680 @@
-﻿@tailwind base;
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Use system fonts as fallback if Inter not available */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ============================================================
+   DESIGN TOKENS — PearlDesk
+============================================================ */
+:root {
+  --primary: #2A9D8F;
+  --primary-dark: #1B7A6E;
+  --primary-light: #52C5B6;
+  --accent: #E76F51;
+  --accent-dark: #d4613e;
+  --bg: #FDF8F3;
+  --surface: #FFFFFF;
+  --surface-raised: #F5EFE8;
+  --border: #E8DDD3;
+  --text: #1C1917;
+  --text-muted: #6B5C52;
+  --text-faint: #A89080;
+  --success: #3D9970;
+  --warning: #F4B942;
+  --danger: #E63946;
 
-/* Premium base styles for dental clinic */
+  /* Bootstrap overrides */
+  --bs-primary: #2A9D8F;
+  --bs-primary-rgb: 42, 157, 143;
+  --bs-body-bg: #FDF8F3;
+  --bs-body-color: #1C1917;
+  --bs-border-color: #E8DDD3;
+}
+
+/* ============================================================
+   BASE
+============================================================ */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F8FAFC;
+  background-color: #FDF8F3; /* warm cream — matches --bg */
+}
+
+/* Landing page body override (applied via .landing-page wrapper) */
+.landing-page {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  padding-top: 72px;
+}
+
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4 {
+  font-family: 'Lora', Georgia, serif;
+}
+
+/* ============================================================
+   SPACING OVERRIDES
+============================================================ */
+.py-6 {
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
+@media (min-width: 992px) {
+  .py-6 {
+    padding-top: 7rem;
+    padding-bottom: 7rem;
+  }
+}
+
+/* Ensure sections with same background have a subtle divider */
+.landing-page section + section,
+.landing-page .social-proof-bar + section {
+  border-top: 1px solid var(--border);
+}
+/* Remove divider between clearly different backgrounds */
+.landing-page .contact-section {
+  border-top: none;
+}
+
+/* ============================================================
+   NAVBAR — fully React-controlled, styles inline in component
+   CSS here only handles the landing-page wrapper offset
+============================================================ */
+.landing-page {
+  /* padding-top set inline — navbar is 72px fixed */
+}
+
+/* ============================================================
+   BUTTONS — landing page
+============================================================ */
+.btn-accent {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.btn-accent:hover,
+.btn-accent:focus {
+  background-color: var(--accent-dark);
+  color: white;
+}
+/* Bootstrap primary overrides */
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+.btn-outline-primary {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.btn-outline-primary:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+/* Touch-friendly on mobile */
+@media (max-width: 991px) {
+  .landing-page .btn {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   HERO SECTION
+============================================================ */
+.hero-section {
+  min-height: 100svh;
+  background-color: var(--bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+.hero-blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(42, 157, 143, 0.18) 0%, rgba(42, 157, 143, 0) 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  top: -100px;
+  right: -100px;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-blob-2 {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(231, 111, 81, 0.12) 0%, rgba(231, 111, 81, 0) 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+.hero-eyebrow {
+  background-color: rgba(42, 157, 143, 0.12);
+  color: var(--primary-dark);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  border: 1px solid rgba(42, 157, 143, 0.2);
+}
+.hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+@media (min-width: 992px) {
+  .hero-title { font-size: 3.5rem; }
+}
+.hero-sub {
+  font-size: 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 480px;
+}
+@media (min-width: 992px) {
+  .hero-sub { font-size: 1.125rem; }
+}
+.hero-social-proof {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+}
+.hero-word {
+  display: inline-block;
+}
+
+/* ============================================================
+   DASHBOARD MOCKUP
+============================================================ */
+.hero-mockup {
+  position: relative;
+  z-index: 1;
+}
+.mockup-shell {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.13);
+  overflow: hidden;
+}
+.mockup-sidebar {
+  background: var(--primary-dark);
+  width: 52px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 20px;
+}
+.mockup-sidebar-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mockup-sidebar-icon.active {
+  background: rgba(255, 255, 255, 0.3);
+}
+.mockup-content {
+  flex: 1;
+  padding: 16px;
+  background: var(--bg);
+  min-width: 0;
+}
+.mockup-topbar {
+  background: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mockup-topbar-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: 'Lora', serif;
+}
+.mockup-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: white;
+  font-weight: 700;
+}
+.mockup-stat-card {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+}
+.mockup-stat-label {
+  font-size: 9px;
+  color: var(--text-faint);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.mockup-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'Lora', serif;
+}
+.mockup-stat-badge {
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(42, 157, 143, 0.12);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+.mockup-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mockup-patient-row {
+  background: white;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.mockup-patient-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: white;
+  font-weight: 700;
+}
+.mockup-patient-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+}
+.mockup-patient-sub {
+  font-size: 9px;
+  color: var(--text-faint);
+}
+.mockup-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.mockup-status-dot.pending {
+  background: var(--warning);
+}
+.mockup-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  margin-top: 4px;
+}
+.mockup-bar .fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--primary);
+}
+
+/* ============================================================
+   SOCIAL PROOF BAR
+============================================================ */
+.social-proof-bar {
+  background-color: var(--surface-raised);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.marquee-outer {
+  overflow: hidden;
+  position: relative;
+}
+.marquee-outer::before,
+.marquee-outer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+.marquee-outer::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface-raised), transparent);
+}
+.marquee-outer::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface-raised), transparent);
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 22s linear infinite;
+  gap: 3rem;
+}
+@media (max-width: 576px) {
+  .marquee-track {
+    gap: 1.75rem;
+    font-size: 0.8125rem;
+  }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-item {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.marquee-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.5;
+}
+
+/* ============================================================
+   FEATURES SECTION
+============================================================ */
+.feature-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10) !important;
+}
+.feature-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(42, 157, 143, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+.feature-icon i {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+/* ============================================================
+   HOW IT WORKS
+============================================================ */
+.step-number-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Lora', serif;
+  position: relative;
+  z-index: 1;
+}
+.step-connector-mobile {
+  width: 2px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--primary), var(--border));
+  margin-left: 21px;
+  opacity: 0.5;
+}
+.step-circle-desktop {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  font-family: 'Lora', serif;
+  box-shadow: 0 4px 16px rgba(42, 157, 143, 0.3);
+}
+
+/* ============================================================
+   SCALABILITY SECTION
+============================================================ */
+.scale-card-left {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+.scale-card-right {
+  background: var(--primary);
+}
+.scale-card-right h3,
+.scale-card-right p {
+  color: white;
+}
+.scale-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.scale-icon-wrap.teal { background: rgba(42, 157, 143, 0.12); }
+.scale-icon-wrap.white { background: rgba(255, 255, 255, 0.18); }
+.scale-icon-wrap i { font-size: 1.75rem; }
+.scale-icon-wrap.teal i { color: var(--primary); }
+.scale-icon-wrap.white i { color: white; }
+
+/* ============================================================
+   FAQ — React-controlled accordion (no Bootstrap JS dependency)
+============================================================ */
+/* Styles are inline in the component for full control */
+
+/* ============================================================
+   CONTACT SECTION
+============================================================ */
+.contact-section {
+  background-color: var(--primary);
+}
+.contact-section h2,
+.contact-section p {
+  color: white;
+}
+.contact-section .form-control {
+  background: white;
+  border: none;
+  border-radius: 8px;
+  height: 44px;
+  font-family: 'DM Sans', sans-serif;
+}
+.contact-section textarea.form-control {
+  height: auto;
+}
+.contact-section .form-control:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+}
+.contact-section .form-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.contact-success {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+}
+.contact-success .success-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+.site-footer {
+  background-color: #1C1917;
+  color: rgba(255, 255, 255, 0.6);
+}
+.site-footer .footer-logo {
+  font-family: 'Lora', serif;
+  font-weight: 700;
+  color: white;
+  font-size: 1.125rem;
+}
+.site-footer .footer-tagline {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+.site-footer .footer-heading {
+  color: white;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+.site-footer a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.15s ease;
+  display: block;
+  padding: 3px 0;
+  min-height: 32px;
+  line-height: 1.6;
+}
+.site-footer a:hover {
+  color: white;
+}
+.footer-social a {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.15s ease, color 0.15s ease;
+  min-height: 36px;
+}
+.footer-social a:hover {
+  background: var(--primary);
+  color: white !important;
+}
+.footer-social a i {
+  font-size: 1rem;
+}
+.footer-legal {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================================
+   SECTION HEADINGS
+============================================================ */
+.section-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+.section-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+@media (min-width: 992px) {
+  .section-heading { font-size: 2.25rem; }
+}
+.section-sub {
+  font-size: 1rem;
+  color: var(--text-muted);
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.65;
+}
+
+/* ============================================================
+   FORM CONTROLS
+============================================================ */
+.landing-page .form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.15);
 }

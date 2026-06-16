@@ -260,15 +260,15 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
     );
   };
 
-  return (
+return (
     <div className="space-y-4">
       {/* Dental Chart */}
-      <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200 overflow-x-auto">
+      <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
           <h3 className="text-base sm:text-lg font-semibold">Dental Chart</h3>
-          
-          {/* View Mode Toggle */}
-          <div className="flex rounded-md shadow-sm self-start">
+           
+          {/* View Mode Toggle - Fixed position without horizontal scrollbar */}
+          <div className="flex rounded-md shadow-sm self-start flex-wrap">
             <button
               onClick={() => setViewMode('full')}
               className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-l-md border ${
@@ -295,28 +295,28 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
         {viewMode === 'full' ? (
           <>
             {/* Full Mouth View */}
-            {/* Upper Teeth */}
+            {/* Upper Teeth - Fixed without horizontal scrollbar */}
             <div className="mb-6 sm:mb-8">
               <div className="text-xs text-gray-500 mb-2 text-center">Upper Teeth</div>
-              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
-                <div className="flex gap-1">
+              <div className="flex justify-center flex-wrap gap-2">
+                <div className="flex gap-1 flex-wrap justify-center">
                   {upperTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-4 sm:w-8 flex-shrink-0"></div>
-                <div className="flex gap-1">
+                <div className="w-4 sm:w-8 flex-shrink-0 hidden sm:block"></div>
+                <div className="flex gap-1 flex-wrap justify-center">
                   {upperTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
               </div>
             </div>
 
-            {/* Lower Teeth */}
+            {/* Lower Teeth - Fixed without horizontal scrollbar */}
             <div>
-              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
-                <div className="flex gap-1">
+              <div className="flex justify-center flex-wrap gap-2">
+                <div className="flex gap-1 flex-wrap justify-center">
                   {lowerTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-4 sm:w-8 flex-shrink-0"></div>
-                <div className="flex gap-1">
+                <div className="w-4 sm:w-8 flex-shrink-0 hidden sm:block"></div>
+                <div className="flex gap-1 flex-wrap justify-center">
                   {lowerTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
               </div>
@@ -330,12 +330,12 @@ const DentalChart = ({ patientId, dentalChart, onUpdate }) => {
               {/* Upper Quadrants */}
               {renderQuadrant(1)}
               {renderQuadrant(2)}
-              
+               
               {/* Lower Quadrants */}
               {renderQuadrant(4)}
               {renderQuadrant(3)}
             </div>
-            
+             
             {/* Quadrant Reference */}
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <div className="text-xs font-medium text-blue-900 mb-2">Quadrant Reference (FDI Notation):</div>

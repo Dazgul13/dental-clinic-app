@@ -1,59 +1,122 @@
-# Dental Clinic Management System
+# PearlDesk — Dental Practice Management
 
-A full-stack multi-tenant MERN application for managing dental clinic patients, appointments, and medical records. Each clinic operates in complete isolation — patients, appointments, and staff are scoped to their organization.
+> **Your practice, perfectly managed.**
+
+PearlDesk is a full-stack, multi-tenant MERN application for dental practice management. Each clinic operates in complete data isolation — patients, appointments, staff, and clinical records are scoped to their organization.
+
+---
 
 ## Tech Stack
 
-- **Frontend:** React (Vite), Tailwind CSS, React Router DOM, Axios, React Hot Toast
-- **Backend:** Node.js, Express.js, MongoDB, Mongoose
-- **Authentication:** JWT with account lockout protection
-- **Security:** Helmet, rate limiting, input validation, XSS & NoSQL injection protection, CORS
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 (Vite), Tailwind CSS, Bootstrap 5, GSAP 3 |
+| Routing | React Router DOM v6 |
+| HTTP | Axios |
+| Notifications | React Hot Toast |
+| Backend | Node.js, Express.js |
+| Database | MongoDB, Mongoose |
+| Authentication | JWT with account lockout protection |
+| Security | Helmet, rate limiting, express-validator, express-mongo-sanitize, xss-clean, hpp, CORS |
+
+---
 
 ## Features
 
-- **Multi-tenant** — each clinic has isolated data with organization scoping
-- **Organization Approval Workflow** — clinics must be approved by system admin before access
-- **Secure Clinic Lookup** — slug-based authentication prevents enumeration attacks
-- **Seat-based Licensing** — max 1 admin, max 2 staff per organization
-- Patient management (add, edit, delete, search, paginate)
-- Interactive dental chart with FDI notation (full mouth & quadrant views)
-- Pediatric dental charting for patients age 7 and under (primary teeth)
-- Tooth surface tracking (MODBL notation)
-- Clinical notes (add, edit, delete) with pagination
-- Treatment plans with status tracking
-- Appointment scheduling, status management, and rescheduling
-- 7-day schedule view
-- Dashboard with today's appointments
-- Role-based access (admin / staff)
-- Responsive design
+### Platform
+- **Multi-tenant architecture** — complete data isolation per clinic via `organizationId` scoping
+- **Organization approval workflow** — clinics require SysAdmin approval before staff can log in
+- **Seat-based licensing** — max 1 admin and max 2 staff per organization
+- **Role-based access** — Admin and Staff roles with separate permissions
+- **Secure clinic lookup** — slug-based two-step authentication prevents enumeration attacks
+
+### Clinical
+- Patient management — add, edit, delete, search, paginate
+- Interactive dental chart (Universal/FDI notation) — full mouth and quadrant views
+- Pediatric charting — automatically activated for patients aged 7 and under (primary teeth, letter notation)
+- Per-tooth surface tracking — MODBL notation (Mesial, Occlusal, Distal, Buccal, Lingual, Incisal)
+- Clinical notes — add, edit, delete, paginated newest-first
+- Treatment plans — procedure, tooth/surface reference, cost (₱), status tracking (Proposed → In Progress → Completed)
+- Appointment scheduling — Day / Week / Month calendar views, status management, rescheduling
+
+### UI / UX
+- Warm, professional design system — cream backgrounds (`#FDF8F3`), dental teal (`#2A9D8F`), coral accent (`#E76F51`)
+- Lora serif for headings, DM Sans for UI, consistent spacing and border-radius tokens
+- Fully responsive — mobile-first layouts, collapsible sidebar, no horizontal scroll
+- GSAP-powered landing page with scroll-triggered animations
+- PearlDesk landing page with Navbar, Hero, Features, How It Works, FAQ, Contact, Footer sections
+- System Admin dashboard — separate dark-themed panel for tenant management
+
+---
 
 ## Project Structure
 
 ```
 dental-app/
-├── server/
-│   ├── config/           # Database connection
-│   ├── middleware/       # Auth, validation, error handling, seat limiter
-│   ├── models/           # Organization, User, Patient, Appointment, SystemAdmin
-│   ├── routes/           # Auth, patients, appointments, organization, sys-admin
-│   ├── seed.js           # Demo data seeder
-│   └── server.js         # Entry point
-└── client/
-    └── src/
-        ├── components/   # Layout, modals, DentalChart, PediatricDentalChart
-        ├── context/      # AuthContext
-        ├── pages/        # Dashboard, PatientList, PatientDetails, Schedule, Register
-        └── utils/        # API client, sanitize helpers
+├── client/                        # Vite + React frontend
+│   ├── index.html                 # Vite entry point (CDN links: Bootstrap 5, Bootstrap Icons, Lora/DM Sans fonts)
+│   ├── public/
+│   └── src/
+│       ├── components/
+│       │   ├── Layout.jsx         # App shell — collapsible sidebar, mobile top bar
+│       │   ├── Navbar.jsx         # Re-exports public Navbar from Home.jsx
+│       │   ├── AppointmentModal.jsx
+│       │   ├── PatientModal.jsx
+│       │   ├── DentalChart.jsx    # Adult 32-tooth chart (Universal/FDI)
+│       │   ├── PediatricDentalChart.jsx  # Primary 20-tooth chart (A–E notation)
+│       │   └── TreatmentPlanList.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx    # Login, register, logout, JWT persistence
+│       ├── pages/
+│       │   ├── Home.jsx           # PearlDesk landing page + shared Navbar export
+│       │   ├── Login.jsx          # Two-step login (slug → credentials)
+│       │   ├── Register.jsx       # Clinic + admin account registration
+│       │   ├── Dashboard.jsx
+│       │   ├── PatientList.jsx
+│       │   ├── PatientDetails.jsx # Tabs: Info, Dental Chart, Treatment Plans, Notes
+│       │   ├── Schedule.jsx       # Day / Week / Month calendar
+│       │   ├── AccountSettings.jsx
+│       │   ├── ChangePassword.jsx
+│       │   ├── SysAdminLogin.jsx
+│       │   └── SysAdminDashboard.jsx
+│       ├── utils/
+│       │   ├── api.js             # Axios instance with auth interceptor
+│       │   └── sanitize.js        # Client-side input sanitization helpers
+│       ├── index.css              # Design tokens, landing page styles, Tailwind directives
+│       └── main.jsx
+└── server/                        # Express backend
+    ├── config/
+    │   └── db.js                  # MongoDB connection
+    ├── middleware/
+    │   ├── authMiddleware.js      # JWT verification
+    │   ├── errorHandler.js
+    │   ├── seatLimiter.js         # Enforces admin/staff seat limits
+    │   └── validation.js          # express-validator rules
+    ├── models/
+    │   ├── Organization.js
+    │   ├── User.js
+    │   ├── Patient.js
+    │   ├── Appointment.js
+    │   └── SystemAdmin.js
+    ├── routes/
+    │   ├── authRoutes.js
+    │   ├── patientRoutes.js
+    │   ├── appointmentRoutes.js
+    │   ├── organizationRoutes.js
+    │   └── sysAdminRoutes.js
+    ├── seed.js                    # Demo data seeder
+    └── server.js                  # Entry point
 ```
 
-## Setup
+---
+
+## Local Setup
 
 ### Prerequisites
-
 - Node.js 18+
-- MongoDB Atlas account (or local MongoDB)
+- MongoDB Atlas account or local MongoDB instance
 
-### Backend
+### 1. Backend
 
 ```bash
 cd server
@@ -61,20 +124,19 @@ npm install
 ```
 
 Create `server/.env`:
-```
+```env
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_strong_random_secret_min_32_chars
+JWT_SECRET=your_strong_random_secret_minimum_32_chars
 PORT=5000
 CLIENT_URL=http://localhost:5173
-SUPER_ADMIN_MASTER_SECRET=your_super_admin_secret_for_clinic_provisioning
+SUPER_ADMIN_MASTER_SECRET=your_super_admin_secret
 ```
 
-Start the server:
 ```bash
 npm run dev
 ```
 
-### Frontend
+### 2. Frontend
 
 ```bash
 cd client
@@ -82,195 +144,169 @@ npm install
 ```
 
 Create `client/.env`:
-```
+```env
 VITE_API_URL=http://localhost:5000/api
 ```
 
-Start the dev server:
 ```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+App runs at `http://localhost:5173`.
 
-### Seed Demo Data
-
-To populate the database with a demo clinic, 10 patients, and 10 appointments:
+### 3. Seed Demo Data
 
 ```bash
 node server/seed.js
 ```
 
-> Credentials are printed to the console after seeding. Change them immediately after first login.
+Credentials are printed to the console after seeding.
 
-> **Demo credentials:**
-> - Clinic slug: `demo-dental-clinic`
-> - Admin: `admin` / `Admin123!`
-> - Staff: `staff` / `Staff123!`
+| Field | Value |
+|---|---|
+| Clinic slug | `demo-dental-clinic` |
+| Admin username | `admin` |
+| Admin password | `Admin123!` |
+| Staff username | `staff` |
+| Staff password | `Staff123!` |
+
+> Change these immediately after first login.
+
+---
 
 ## Authentication Flow
 
-### Two-Stage Login Process
+### Two-Step Login
+1. User enters their clinic slug (e.g., `bright-smiles-clinic`)
+2. Slug is verified via `POST /api/organization/verify-slug` — rate-limited, no org data exposed
+3. User enters username + password
+4. JWT issued if credentials are valid **and** the clinic status is `Approved`
 
-1. **Enter Clinic Slug** — Users begin by entering their clinic's unique slug (e.g., "demo-dental-clinic")
-2. **Slug Verification** — System verifies the clinic exists without exposing any details
-3. **Enter Credentials** — After slug is verified, users enter their username and password
-4. **Access Check** — Login succeeds only if the clinic status is "Approved"
+### Registration
+1. Fill in clinic name, contact email, and phone
+2. Create admin credentials (username, email, password)
+3. New organization is created with `Pending` status
+4. A SysAdmin must approve the organization before anyone can log in
 
-### Registration Flow
+---
 
-1. Fill in clinic name, email, and phone
-2. Create an admin account (username, email, password)
-3. **Requires `SUPER_ADMIN_MASTER_SECRET` header** — Only system administrators can provision new clinics
-4. A new isolated organization is created with `Pending` status
-5. The first account is automatically assigned admin role
-6. All subsequent data (patients, appointments) is scoped to that organization
-7. Users cannot log in until a system admin approves the clinic
+## System Admin
 
-Staff accounts can be added by an admin after registration through the admin panel. Admins can promote or demote staff members to/from admin role as needed (subject to seat limits).
+The SysAdmin panel is a separate, dark-themed interface for managing all organizations.
 
-## System Administrator
-
-The system admin panel manages organization approvals and oversights:
-
-### System Admin Login
-```bash
-POST /api/sys-admin/login
-{
-  "username": "sysadmin",
-  "password": "your_password"
-}
+### Login
 ```
+POST /api/sys-admin/login
+Body: { username, password }
+```
+Stores `sysAdminToken` in localStorage (separate from regular user auth).
 
-### Organization Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/sys-admin/organizations` | List all organizations (requires `x-system-admin: true` header) |
-| PUT | `/api/sys-admin/organizations/:id/status` | Approve/Suspend/Pending status (requires `x-system-admin: true` header) |
+### Endpoints
+| Method | Endpoint | Header Required | Description |
+|---|---|---|---|
+| GET | `/api/sys-admin/organizations` | `X-System-Admin: true` | List all organizations |
+| PUT | `/api/sys-admin/organizations/:id/status` | `X-System-Admin: true` | Set Approved / Pending / Suspended |
 
-### Creating a System Admin
+### Creating the First SysAdmin
 
-To create the initial system admin, insert directly into MongoDB:
+Use `server/create-system-admin.js` locally (excluded from git), or insert directly:
 
-```javascript
-// In MongoDB shell or via script
+```js
 db.systemadmins.insertOne({
   username: "sysadmin",
   email: "sysadmin@yourdomain.com",
-  password: bcrypt.hashSync("your_secure_password", 10)
+  password: "<bcrypt hash of your password>"
 })
 ```
 
-## API Endpoints
+---
+
+## API Reference
 
 ### Auth
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register a new clinic + admin account (requires `x-super-admin-secret` header) |
-| POST | `/api/auth/login` | Login (requires `x-clinic-slug` header) |
+|---|---|---|
+| POST | `/api/auth/register` | Register clinic + admin (`x-super-admin-secret` header required) |
+| POST | `/api/auth/login` | Login (`x-clinic-slug` header required) |
+| POST | `/api/auth/change-password` | Change password (authenticated) |
 
 ### Patients
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/patients` | List patients (supports `?search=`, `?page=`) |
-| GET | `/api/patients/:id` | Get patient details |
+|---|---|---|
+| GET | `/api/patients` | List patients (`?search=`, `?page=`) |
+| GET | `/api/patients/:id` | Get patient |
 | POST | `/api/patients` | Create patient |
 | PUT | `/api/patients/:id` | Update patient |
 | DELETE | `/api/patients/:id` | Delete patient |
 | POST | `/api/patients/:id/notes` | Add clinical note |
-| PUT | `/api/patients/:patientId/notes/:noteId` | Update note |
-| DELETE | `/api/patients/:patientId/notes/:noteId` | Delete note |
-| POST | `/api/patients/:patientId/treatment-plans` | Create treatment plan |
-| PATCH | `/api/patients/:patientId/treatment-plans/:planId` | Update treatment plan status |
-| PUT | `/api/patients/:patientId/dental-chart/:toothNumber` | Update tooth condition (supports 1-32 permanent or A-T primary teeth) |
+| PUT | `/api/patients/:id/notes/:noteId` | Update note |
+| DELETE | `/api/patients/:id/notes/:noteId` | Delete note |
+| POST | `/api/patients/:id/treatment-plans` | Create treatment plan |
+| PATCH | `/api/patients/:id/treatment-plans/:planId` | Update treatment plan status |
+| PUT | `/api/patients/:id/dental-chart/:toothNumber` | Update tooth (1–32 permanent or A–T primary) |
 
 ### Appointments
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/appointments` | List appointments (supports `?date=`, `?startDate=`, `?endDate=`, `?status=`) |
-| POST | `/api/appointments` | Create appointment |
-| PUT | `/api/appointments/:id` | Update appointment |
-| DELETE | `/api/appointments/:id` | Delete appointment |
+|---|---|---|
+| GET | `/api/appointments` | List (`?date=`, `?startDate=`, `?endDate=`, `?status=`) |
+| POST | `/api/appointments` | Create |
+| PUT | `/api/appointments/:id` | Update / reschedule |
+| DELETE | `/api/appointments/:id` | Delete |
 
 ### Organization
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/organization/me` | Get clinic details |
-| PUT | `/api/organization/me` | Update clinic details (admin only) |
-| GET | `/api/organization/users` | List clinic users |
-| POST | `/api/organization/users` | Create staff user (admin only, max 2 staff) |
-| PUT | `/api/organization/users/:userId/role` | Update user role (admin only, max 1 admin) |
-| POST | `/api/organization/verify-slug` | Verify clinic slug existence (rate-limited) |
+|---|---|---|
+| GET | `/api/organization/me` | Get clinic info |
+| PUT | `/api/organization/me` | Update clinic info (admin) |
+| GET | `/api/organization/users` | List staff |
+| POST | `/api/organization/users` | Add staff (admin, max 2) |
+| PUT | `/api/organization/users/:userId/role` | Change role (admin, max 1 admin) |
+| POST | `/api/organization/verify-slug` | Verify slug exists (rate-limited) |
 
-## Seat-Based Licensing
-
-The application enforces seat limits per organization:
-- **Max 1 admin** per clinic (cannot promote if one exists)
-- **Max 2 staff members** per clinic (enforced on creation)
-
-To upgrade seat limits, modify the validation in `server/routes/organizationRoutes.js`.
-
-## Using the Application
-
-### Dashboard
-- View today's appointments at a glance
-- Quick links to Patients and Schedule pages
-- Statistics on scheduled appointments
-
-### Patient Management
-- **Patient List**: Search, view, and add patients. Supports pagination (10 patients per page).
-- **Patient Details**: Access tabs:
-  - **Patient Information**: View personal details, DOB, contact info, allergies, and medical conditions. Edit and delete patient are available here.
-  - **Dental Chart**: Interactive tooth charting with:
-    - Full mouth view (Universal/FDI numbering)
-    - Quadrant view with statistics
-    - Click any tooth to set status: Healthy, Cavity, Filled, Crown, Missing, Root Canal, Implant
-    - Surface-level detail (MODBL): Mesial, Occlusal, Distal, Buccal, Lingual, Incisal
-  - **Pediatric Chart**: Automatically shown for patients age 7 and under (primary teeth with letter notation A–E per quadrant)
-  - **Treatment Plans**: Add procedures with optional tooth/surface targeting, cost in Philippine Peso (₱), and status tracking. Statuses: Proposed → In Progress → Completed
-
-### Schedule
-- Three view modes: Day, Week, Month
-- Color-coded appointment status badges
-- Create and manage appointments
-- Reschedule functionality via status dropdown
-- Status options: Scheduled, Completed, Cancelled, Reschedule
+---
 
 ## Deployment
 
-### Backend (Render)
+### Backend — Render
 
-1. Push to GitHub
-2. Create a new Web Service on [Render](https://render.com)
-3. Set root directory to `server`
-4. Set environment variables:
-    - `MONGO_URI`
-    - `JWT_SECRET`
-    - `CLIENT_URL` (your Vercel frontend URL, without trailing slash)
-    - `SUPER_ADMIN_MASTER_SECRET` (for clinic provisioning)
-    - `NODE_ENV=production`
+1. Create a Web Service pointing to the repo
+2. Set **Root Directory** to `server`
+3. **Build command:** `npm install`
+4. **Start command:** `node server.js`
+5. Set environment variables:
 
-### Frontend (Vercel)
+| Key | Value |
+|---|---|
+| `MONGO_URI` | Your Atlas connection string |
+| `JWT_SECRET` | Strong random string (32+ chars) |
+| `CLIENT_URL` | Your Vercel frontend URL (no trailing slash) |
+| `SUPER_ADMIN_MASTER_SECRET` | Secret for clinic provisioning |
+| `NODE_ENV` | `production` |
 
-1. Import the repo on [Vercel](https://vercel.com)
-2. Set root directory to `client`
-3. Add environment variable: `VITE_API_URL=https://your-render-api.onrender.com/api`
+### Frontend — Vercel
+
+1. Import repo on Vercel
+2. Set **Root Directory** to `client`
+3. Set environment variable: `VITE_API_URL=https://your-render-service.onrender.com/api`
+
+---
 
 ## Security
 
-- Rate limiting on all routes (stricter on auth)
-- JWT authentication with 7-day expiry
-- Account lockout after 5 failed login attempts (15 min)
+- Rate limiting on all routes (stricter on auth and slug verification endpoints)
+- JWT with 7-day expiry
+- Account lockout after 5 failed attempts (15-minute window)
 - Helmet security headers
-- NoSQL injection protection (express-mongo-sanitize)
-- XSS protection (xss-clean)
-- HTTP parameter pollution prevention (hpp)
-- Input validation on all endpoints (express-validator)
-- All queries scoped to `organizationId` — cross-tenant data access is not possible
-- Clinic slug verification prevents enumeration attacks
-- Organization status controls tenant access (Pending/Approved/Suspended)
+- NoSQL injection protection (`express-mongo-sanitize`)
+- XSS protection (`xss-clean`)
+- HTTP parameter pollution prevention (`hpp`)
+- Input validation on all endpoints (`express-validator`)
+- All database queries scoped to `organizationId` — cross-tenant access is structurally impossible
+- Clinic slug verification is a `POST` request to prevent browser/CDN caching and response enumeration
 
 See [SECURITY.md](SECURITY.md) for full details.
+
+---
 
 ## License
 

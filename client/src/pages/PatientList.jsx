@@ -107,72 +107,68 @@ const PatientList = () => {
         </div>
       </div>
 
-      {/* Patient Table - Clean and spacious */}
+      {/* Patient Table */}
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading patients...</p>
-          </div>
-        ) : patients.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <p className="text-gray-600">
-              {search ? 'No patients found matching your search.' : 'No patients yet. Add your first patient!'}
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                    Date of Birth
-                  </th>
-                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-4 sm:px-6 py-4 text-left text-xs font-semibold text-navy-700 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentPatients.map((patient) => (
-                  <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 sm:px-6 py-4">
-                      <div className="text-sm font-medium text-navy-900">
-                        {patient.firstName} {patient.lastName}
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4">
-                      <div className="text-sm text-gray-600 whitespace-normal">{formatDate(patient.dob)}</div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4">
-                      <div className="text-sm text-navy-900 whitespace-normal">{patient.phone}</div>
-                      <div className="text-sm text-gray-500 whitespace-normal break-all">{patient.email}</div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 text-sm font-medium whitespace-nowrap">
-                      <Link
-                        to={`/dashboard/patients/${patient._id}`}
-                        className="text-teal-600 hover:text-teal-800 transition-colors"
-                      >
-                        View Details →
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+           <div className="p-12 text-center">
+             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
+             <p className="text-gray-600">Loading patients...</p>
+           </div>
+         ) : patients.length === 0 ? (
+           <div className="p-12 text-center">
+             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+               <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+               </svg>
+             </div>
+             <p className="text-gray-600">
+               {search ? 'No patients found matching your search.' : 'No patients yet. Add your first patient!'}
+             </p>
+           </div>
+         ) : (
+           /* Scrollable wrapper — prevents horizontal overflow */
+           <div className="overflow-x-auto w-full">
+             <table className="w-full divide-y divide-gray-200" style={{ minWidth: 0 }}>
+               <thead className="bg-gray-50">
+                 <tr>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Date of Birth</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
+                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                 </tr>
+               </thead>
+               <tbody className="bg-white divide-y divide-gray-200">
+                 {currentPatients.map((patient) => (
+                   <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
+                     <td className="px-4 py-3">
+                       <div className="text-sm font-medium text-gray-900">
+                         {patient.firstName} {patient.lastName}
+                       </div>
+                       {/* Show DOB + contact inline on mobile */}
+                       <div className="text-xs text-gray-500 mt-0.5 sm:hidden">{formatDate(patient.dob)}</div>
+                       <div className="text-xs text-gray-500 mt-0.5 md:hidden">{patient.phone}</div>
+                     </td>
+                     <td className="px-4 py-3 hidden sm:table-cell">
+                       <div className="text-sm text-gray-600">{formatDate(patient.dob)}</div>
+                     </td>
+                     <td className="px-4 py-3 hidden md:table-cell">
+                       <div className="text-sm text-gray-900">{patient.phone}</div>
+                       <div className="text-xs text-gray-500 break-all">{patient.email}</div>
+                     </td>
+                     <td className="px-4 py-3 text-sm font-medium">
+                       <Link
+                         to={`/dashboard/patients/${patient._id}`}
+                         className="text-teal-600 hover:text-teal-800 transition-colors whitespace-nowrap"
+                       >
+                         View →
+                       </Link>
+                     </td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           </div>
+         )}
 
         {/* Pagination Controls - Premium styling */}
         {!loading && patients.length > patientsPerPage && (

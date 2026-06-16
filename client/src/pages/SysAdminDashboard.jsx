@@ -135,84 +135,88 @@ const SysAdminDashboard = () => {
               <p className="text-gray-600">No organizations found.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Organization
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Created
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Organization
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Users
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {organizations.map((org) => (
+                  <tr key={org._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{org.name}</div>
+                        <div className="text-sm text-gray-500">slug: {org.slug}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{org.email}</div>
+                      <div className="text-sm text-gray-500">{org.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{org.userCount || 0}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusBadge(org.status)}`}>
+                        {org.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(org.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex flex-wrap gap-2">
+                        {org.status !== 'Approved' && (
+                          <button
+                            onClick={() => handleUpdateStatus(org._id, 'Approved')}
+                            disabled={updating === org._id}
+                            className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-md text-xs font-medium hover:bg-green-100 disabled:opacity-50"
+                          >
+                            {updating === org._id ? '...' : 'Approve'}
+                          </button>
+                        )}
+                        {org.status !== 'Suspended' && (
+                          <button
+                            onClick={() => handleUpdateStatus(org._id, 'Suspended')}
+                            disabled={updating === org._id}
+                            className="px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md text-xs font-medium hover:bg-red-100 disabled:opacity-50"
+                          >
+                            {updating === org._id ? '...' : 'Suspend'}
+                          </button>
+                        )}
+                        {org.status !== 'Pending' && (
+                          <button
+                            onClick={() => handleUpdateStatus(org._id, 'Pending')}
+                            disabled={updating === org._id}
+                            className="px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md text-xs font-medium hover:bg-yellow-100 disabled:opacity-50"
+                          >
+                            {updating === org._id ? '...' : 'Set Pending'}
+                          </button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {organizations.map((org) => (
-                    <tr key={org._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{org.name}</div>
-                          <div className="text-sm text-gray-500">slug: {org.slug}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{org.email}</div>
-                        <div className="text-sm text-gray-500">{org.phone}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusBadge(org.status)}`}>
-                          {org.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(org.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex flex-wrap gap-2">
-                          {org.status !== 'Approved' && (
-                            <button
-                              onClick={() => handleUpdateStatus(org._id, 'Approved')}
-                              disabled={updating === org._id}
-                              className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-md text-xs font-medium hover:bg-green-100 disabled:opacity-50"
-                            >
-                              {updating === org._id ? '...' : 'Approve'}
-                            </button>
-                          )}
-                          {org.status !== 'Suspended' && (
-                            <button
-                              onClick={() => handleUpdateStatus(org._id, 'Suspended')}
-                              disabled={updating === org._id}
-                              className="px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md text-xs font-medium hover:bg-red-100 disabled:opacity-50"
-                            >
-                              {updating === org._id ? '...' : 'Suspend'}
-                            </button>
-                          )}
-                          {org.status !== 'Pending' && (
-                            <button
-                              onClick={() => handleUpdateStatus(org._id, 'Pending')}
-                              disabled={updating === org._id}
-                              className="px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md text-xs font-medium hover:bg-yellow-100 disabled:opacity-50"
-                            >
-                              {updating === org._id ? '...' : 'Set Pending'}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

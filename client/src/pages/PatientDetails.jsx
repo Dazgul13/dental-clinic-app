@@ -276,22 +276,49 @@ const PatientDetails = () => {
 
   return (
     <div className="px-4 sm:px-0">
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <button
           onClick={() => navigate('/dashboard/patients')}
-          className="text-primary-600 hover:text-primary-800 flex items-center"
+          className="inline-flex items-center text-sm font-medium hover:opacity-75 transition-opacity"
+          style={{ color: '#2A9D8F' }}
         >
-          <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
           Back to Patients
         </button>
       </div>
 
+      {/* Patient header card */}
+      <div className="bg-white rounded-xl border p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4" style={{ borderColor: '#E8DDD3', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+        <div className="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #52C5B6, #2A9D8F)' }}>
+          {patient.firstName?.[0]}{patient.lastName?.[0]}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold" style={{ fontFamily: 'Lora, Georgia, serif', color: '#1C1917' }}>
+            {patient.firstName} {patient.lastName}
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: '#6B5C52' }}>
+            DOB: {formatDate(patient.dob)} &nbsp;·&nbsp; Age: {patient.age ?? '—'} &nbsp;·&nbsp; {patient.phone}
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {patient.medicalHistory?.allergies?.length > 0 && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: '#FEE2E2', color: '#991B1B' }}>
+              ⚠ Allergies
+            </span>
+          )}
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: '#D1FAE5', color: '#065F46' }}>
+            Active
+          </span>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex overflow-x-auto px-2 sm:px-6" aria-label="Tabs">
+          <nav className="-mb-px flex px-2 sm:px-6" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('info')}
               className={`${
@@ -340,7 +367,63 @@ const PatientDetails = () => {
           {/* Patient Information Tab */}
           {activeTab === 'info' && (
             <>
-              <dl className="sm:divide-y sm:divide-gray-200">
+              {isEditing ? (
+                <form onSubmit={handleSaveEdit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      <input name="firstName" required value={editForm.firstName} onChange={handleEditChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      <input name="lastName" required value={editForm.lastName} onChange={handleEditChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                      <input type="date" name="dob" required value={editForm.dob} onChange={handleEditChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input type="tel" name="phone" required value={editForm.phone} onChange={handleEditChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" required value={editForm.email} onChange={handleEditChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Allergies <span className="text-gray-400 font-normal">(comma-separated)</span></label>
+                    <input name="allergies" value={editForm.allergies} onChange={handleEditChange}
+                      placeholder="e.g., Penicillin, Latex"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Medical Conditions <span className="text-gray-400 font-normal">(comma-separated)</span></label>
+                    <input name="conditions" value={editForm.conditions} onChange={handleEditChange}
+                      placeholder="e.g., Diabetes, Hypertension"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 text-sm" />
+                  </div>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <button type="button" onClick={handleCancelEdit}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      Cancel
+                    </button>
+                    <button type="submit" disabled={saving}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium disabled:opacity-50">
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <dl className="sm:divide-y sm:divide-gray-200">
                 <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Date of Birth</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{formatDate(patient.dob)}</dd>
@@ -406,6 +489,8 @@ const PatientDetails = () => {
                   Delete Patient
                 </button>
               </div>
+                </>
+              )}
             </>
           )}
           {/* Dental Chart Tab */}

@@ -251,12 +251,12 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
   return (
     <div className="space-y-4">
       {/* Dental Chart Header with View Toggle */}
-      <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200 overflow-x-auto">
+      <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
           <h3 className="text-base sm:text-lg font-semibold">Primary Dental Chart (Baby Teeth)</h3>
           
-          {/* View Mode Toggle */}
-          <div className="flex rounded-md shadow-sm self-start">
+          {/* View Mode Toggle - Fixed position without horizontal scrollbar */}
+          <div className="flex rounded-md shadow-sm self-start flex-wrap">
             <button
               onClick={() => setViewMode('full')}
               className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-l-md border ${
@@ -285,24 +285,24 @@ const PediatricDentalChart = ({ patientId, dentalChart, onUpdate }) => {
           <>
             <div className="mb-6 sm:mb-8">
               <div className="text-xs text-gray-500 mb-2 text-center">Upper Primary Teeth</div>
-              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
-                <div className="flex gap-1">
+              <div className="flex justify-center flex-wrap gap-2">
+                <div className="flex gap-1 flex-wrap justify-center">
                   {upperPrimaryTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-4 sm:w-8 flex-shrink-0"></div>
-                <div className="flex gap-1">
+                <div className="w-4 sm:w-8 flex-shrink-0 hidden sm:block"></div>
+                <div className="flex gap-1 flex-wrap justify-center">
                   {upperPrimaryTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
               </div>
             </div>
 
             <div>
-              <div className="flex justify-center gap-2 sm:gap-8 overflow-x-auto">
-                <div className="flex gap-1">
+              <div className="flex justify-center flex-wrap gap-2">
+                <div className="flex gap-1 flex-wrap justify-center">
                   {lowerPrimaryTeeth[0].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
-                <div className="w-4 sm:w-8 flex-shrink-0"></div>
-                <div className="flex gap-1">
+                <div className="w-4 sm:w-8 flex-shrink-0 hidden sm:block"></div>
+                <div className="flex gap-1 flex-wrap justify-center">
                   {lowerPrimaryTeeth[1].map(toothNum => renderToothWithSurfaces(toothNum, true))}
                 </div>
               </div>

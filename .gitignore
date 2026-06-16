@@ -38,3 +38,10 @@ coverage/
 
 # Misc
 .cache/
+
+# Agent / AI tooling instructions
+AGENTS.md
+
+# Utility / one-off scripts (not for production)
+server/check-db.js
+server/create-system-admin.js

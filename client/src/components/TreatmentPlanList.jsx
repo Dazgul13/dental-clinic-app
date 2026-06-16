@@ -186,9 +186,9 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
           </form>
         )}
 
-        {/* Treatment Plans Table */}
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <table className="min-w-[640px] divide-y divide-gray-200">
+        {/* Treatment Plans Table - No horizontal scrollbar */}
+        <div>
+          <table className="w-full divide-y divide-gray-200 table-auto">
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -252,7 +252,7 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
                     </td>
                     <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-right text-xs sm:text-sm">
                       {plan.status !== 'Completed' && plan.status !== 'Cancelled' && (
-                        <div className="flex items-center justify-end space-x-1 sm:space-x-2">
+                        <div className="flex items-center justify-end space-x-1 sm:space-x-2 flex-wrap">
                           {plan.status === 'Proposed' && (
                             <button
                               onClick={() => handleUpdateStatus(plan._id, 'In Progress')}

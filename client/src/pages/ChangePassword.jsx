@@ -36,10 +36,8 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="px-4 sm:px-0">
-      <div className="md:pl-64">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Change Password</h1>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: 'Lora, Georgia, serif', color: '#1C1917' }}>Change Password</h1>
 
           <div className="bg-white shadow rounded-lg p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -103,8 +101,6 @@ const ChangePassword = () => {
             </form>
           </div>
         </div>
-      </div>
-    </div>
   );
 };
 

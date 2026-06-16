@@ -68,10 +68,8 @@ const AccountSettings = () => {
   };
 
   return (
-    <div className="px-4 sm:px-0">
-      <div className="md:pl-64">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold text-navy-900 mb-6">Account Settings</h1>
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6" style={{ fontFamily: 'Lora, Georgia, serif', color: '#1C1917' }}>Account Settings</h1>
 
           {/* Change Password Section */}
           <div className="bg-white shadow rounded-lg mb-6">
@@ -209,8 +207,6 @@ const AccountSettings = () => {
             </div>
           )}
         </div>
-      </div>
-    </div>
   );
 };
 

@@ -68,7 +68,17 @@ router.get('/organizations', protect, async (req, res) => {
     // Fetch all organizations with pending/approved/suspended status
     // SECURITY: No organization filtering - system admin sees all
     const organizations = await Organization.find({}).sort({ createdAt: -1 });
-    res.json(organizations);
+    
+    // Get user count for each organization
+    const User = require('../models/User');
+    const orgsWithUserCounts = await Promise.all(
+      organizations.map(async (org) => {
+        const userCount = await User.countDocuments({ organizationId: org._id });
+        return { ...org.toObject(), userCount };
+      })
+    );
+    
+    res.json(orgsWithUserCounts);
   } catch (error) {
     console.error('Error fetching organizations:', error);
     res.status(500).json({ message: error.message });
