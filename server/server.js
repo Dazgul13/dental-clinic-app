@@ -12,6 +12,8 @@ const patientRoutes = require('./routes/patientRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
 const sysAdminRoutes = require('./routes/sysAdminRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 dotenv.config();
 
@@ -90,6 +92,8 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/stats', statsRoutes);
 // System admin routes - separate from tenant routes for administrative oversight
 app.use('/api/sys-admin', apiLimiter, sysAdminRoutes);
 app.use('/api', apiLimiter);

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
+import Modal from 'react-bootstrap/Modal'
+import Button from './ui/Button'
 
 const PatientModal = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -70,17 +72,11 @@ const PatientModal = ({ onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">Add New Patient</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-500">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
+    <Modal show onHide={onClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Add New Patient</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
         {error && (
           <div className="mb-4 bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded">
             {error}
@@ -179,24 +175,12 @@ const PatientModal = ({ onClose, onSuccess }) => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50"
-            >
-              {loading ? 'Adding...' : 'Add Patient'}
-            </button>
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="primary" type="submit" disabled={loading}>{loading ? 'Adding...' : 'Add Patient'}</Button>
           </div>
         </form>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 };
 

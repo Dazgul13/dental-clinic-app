@@ -3,6 +3,17 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import PatientModal from '../components/PatientModal';
+import Card from '../components/ui/Card'
+
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < breakpoint : false);
+  useEffect(() => {
+    function onResize() { setIsMobile(window.innerWidth < breakpoint); }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [breakpoint]);
+  return isMobile;
+}
 
 const PatientList = () => {
   const [patients, setPatients] = useState([]);
@@ -11,6 +22,7 @@ const PatientList = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const patientsPerPage = 10;
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchPatients();
@@ -107,7 +119,7 @@ const PatientList = () => {
         </div>
       </div>
 
-      {/* Patient Table */}
+      {/* Patient Table / Cards */}
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
         {loading ? (
            <div className="p-12 text-center">
@@ -126,48 +138,67 @@ const PatientList = () => {
              </p>
            </div>
          ) : (
-           /* Scrollable wrapper — prevents horizontal overflow */
-           <div className="overflow-x-auto w-full">
-             <table className="w-full divide-y divide-gray-200" style={{ minWidth: 0 }}>
-               <thead className="bg-gray-50">
-                 <tr>
-                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Date of Birth</th>
-                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
-                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-                 </tr>
-               </thead>
-               <tbody className="bg-white divide-y divide-gray-200">
-                 {currentPatients.map((patient) => (
-                   <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
-                     <td className="px-4 py-3">
-                       <div className="text-sm font-medium text-gray-900">
-                         {patient.firstName} {patient.lastName}
-                       </div>
-                       {/* Show DOB + contact inline on mobile */}
-                       <div className="text-xs text-gray-500 mt-0.5 sm:hidden">{formatDate(patient.dob)}</div>
-                       <div className="text-xs text-gray-500 mt-0.5 md:hidden">{patient.phone}</div>
-                     </td>
-                     <td className="px-4 py-3 hidden sm:table-cell">
-                       <div className="text-sm text-gray-600">{formatDate(patient.dob)}</div>
-                     </td>
-                     <td className="px-4 py-3 hidden md:table-cell">
-                       <div className="text-sm text-gray-900">{patient.phone}</div>
-                       <div className="text-xs text-gray-500 break-all">{patient.email}</div>
-                     </td>
-                     <td className="px-4 py-3 text-sm font-medium">
-                       <Link
-                         to={`/dashboard/patients/${patient._id}`}
-                         className="text-teal-600 hover:text-teal-800 transition-colors whitespace-nowrap"
-                       >
-                         View →
-                       </Link>
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
+          /* Render responsive list: cards on mobile, table on desktop */
+          <div className="w-full">
+            {isMobile ? (
+              <div className="space-y-3 p-4">
+                {currentPatients.map((p) => (
+                  <Card key={p._id} className="p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{p.firstName} {p.lastName}</div>
+                        <div className="text-xs text-gray-500">{formatDate(p.dob)} • {p.phone}</div>
+                      </div>
+                      <div>
+                        <Link to={`/dashboard/patients/${p._id}`} className="text-teal-600 hover:text-teal-800">View →</Link>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="overflow-x-auto w-full">
+                <table className="w-full divide-y divide-gray-200" style={{ minWidth: 0 }}>
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Date of Birth</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentPatients.map((patient) => (
+                      <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="text-sm font-medium text-gray-900">
+                            {patient.firstName} {patient.lastName}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5 sm:hidden">{formatDate(patient.dob)}</div>
+                          <div className="text-xs text-gray-500 mt-0.5 md:hidden">{patient.phone}</div>
+                        </td>
+                        <td className="px-4 py-3 hidden sm:table-cell">
+                          <div className="text-sm text-gray-600">{formatDate(patient.dob)}</div>
+                        </td>
+                        <td className="px-4 py-3 hidden md:table-cell">
+                          <div className="text-sm text-gray-900">{patient.phone}</div>
+                          <div className="text-xs text-gray-500 break-all">{patient.email}</div>
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium">
+                          <Link
+                            to={`/dashboard/patients/${patient._id}`}
+                            className="text-teal-600 hover:text-teal-800 transition-colors whitespace-nowrap"
+                          >
+                            View →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
          )}
 
         {/* Pagination Controls - Premium styling */}

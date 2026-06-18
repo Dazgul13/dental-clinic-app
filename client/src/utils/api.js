@@ -16,6 +16,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+      const branch = localStorage.getItem('currentBranch');
+      if (branch) {
+        config.headers['X-Clinic-Branch'] = branch;
+      }
     return config;
   },
   (error) => {

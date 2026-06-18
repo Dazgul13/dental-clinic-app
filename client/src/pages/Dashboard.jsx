@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
+import StatCard from '../components/ui/StatCard'
+import LoadingSkeleton from '../components/ui/LoadingSkeleton'
+import Button from '../components/ui/Button'
+import { useAuth } from '../context/AuthContext'
 
 const Dashboard = () => {
   const [appointments, setAppointments] = useState([]);
@@ -11,6 +15,47 @@ const Dashboard = () => {
   useEffect(() => {
     fetchTodayAppointments();
   }, []);
+
+  const { user } = useAuth();
+  const [branches, setBranches] = useState([]);
+  const [currentBranch, setCurrentBranch] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [totalPatients, setTotalPatients] = useState(null);
+  const [pendingPlans, setPendingPlans] = useState(null);
+
+  useEffect(() => {
+    if (user?.branches && user.branches.length) {
+      setBranches(user.branches);
+      setCurrentBranch(user.branches[0].id || user.branches[0]);
+    }
+
+    (async () => {
+      try {
+        const [{ data: notifData }, { data: statsData }] = await Promise.all([
+          api.get('/notifications/unread-count').catch(() => ({ data: { count: 0 } })),
+          api.get('/stats').catch(() => ({ data: null }))
+        ]);
+
+        if (notifData && typeof notifData.count === 'number') setUnreadCount(notifData.count);
+        if (statsData) {
+          setTotalPatients(statsData.totalPatients ?? null);
+          setPendingPlans(statsData.pendingPlans ?? null);
+          // keep appointments length from existing appointments fetch
+          setAppointments(prev => prev);
+          // if todaysAppointments present, set loading false if not already
+        }
+      } catch (err) {
+        // ignore
+      }
+    })();
+  }, [user]);
+
+  // Persist selected branch so `api` can read it for headers
+  useEffect(() => {
+    if (currentBranch) {
+      localStorage.setItem('currentBranch', currentBranch);
+    }
+  }, [currentBranch]);
 
   const fetchTodayAppointments = async () => {
     try {
@@ -35,71 +80,60 @@ const Dashboard = () => {
   return (
     <div className="px-4 sm:px-0">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-navy-900">Dashboard</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Welcome back! Here's what's happening today at your practice.
-        </p>
-      </div>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-navy-900">Dashboard</h1>
+          <p className="mt-2 text-sm text-gray-600">Welcome back! Here's what's happening today at your practice.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <select
+            className="px-3 py-2 border rounded-lg bg-white"
+            aria-label="Branch switcher"
+            value={currentBranch ?? ''}
+            onChange={(e) => setCurrentBranch(e.target.value)}
+          >
+            {(branches.length ? branches : [{ name: 'Default Clinic', id: 'default' }]).map((b) => (
+              <option key={b.id || b} value={b.id || b}>{b.name || b}</option>
+            ))}
+          </select>
+          
+          {/* store branch selection to localStorage for api header */}
+          
 
-      {/* Executive Summary Cards - Premium styling */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-        {/* Today's Appointments Card */}
-        <div className="bg-white overflow-hidden shadow-sm rounded-xl hover:shadow-md transition-shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-teal-100 rounded-lg p-3">
-                <svg className="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Today's Appointments</dt>
-                  <dd className="text-3xl font-semibold text-navy-900">{appointments.length}</dd>
-                </dl>
-              </div>
-            </div>
+          <div style={{ position: 'relative' }}>
+            <button className="relative" aria-label="Notifications">
+              <i className="bi bi-bell" style={{ fontSize: 20 }} />
+              {unreadCount > 0 && (
+                <span style={{ position: 'absolute', top: -6, right: -6 }}>
+                  <span className="px-1.5 py-0.5 rounded-full bg-danger text-white text-xs">{unreadCount}</span>
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div>
+            <Button variant="ghost" onClick={() => {}}>Profile</Button>
           </div>
         </div>
+      </div>
 
-        {/* Quick Link - Patients */}
-        <Link to="/dashboard/patients" className="bg-white overflow-hidden shadow-sm rounded-xl hover:shadow-md transition-shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-green-100 rounded-lg p-3">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">View Patients</dt>
-                  <dd className="text-lg font-semibold text-gray-900">Manage Records</dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </Link>
+      {/* Persist selected branch for API header usage */}
 
-        {/* Quick Link - Schedule */}
-        <Link to="/dashboard/schedule" className="bg-white overflow-hidden shadow-sm rounded-xl hover:shadow-md transition-shadow">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-purple-100 rounded-lg p-3">
-                <svg className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Schedule</dt>
-                  <dd className="text-lg font-semibold text-gray-900">View Calendar</dd>
-                </dl>
-              </div>
-            </div>
+      {/* Executive Summary Cards - moved to StatCard */}
+      <div className="bg-white shadow-sm rounded-xl mb-8">
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {loading ? (
+              <LoadingSkeleton rows={3} />
+            ) : (
+              <>
+                <StatCard to="/dashboard/schedule" icon="bi-calendar-check" label="Today's Appointments" value={appointments.length} sub="vs yesterday" />
+                <StatCard to="/dashboard/patients" icon="bi-people" label="Total Patients" value={totalPatients ?? '—'} sub={totalPatients === null ? 'loading' : ''} />
+                <StatCard to="/dashboard/pending-treatments" icon="bi-wallet2" label="Pending Treatment Plans" value={pendingPlans ?? '—'} sub={pendingPlans === null ? '—' : ''} />
+              </>
+            )}
           </div>
-        </Link>
+        </div>
       </div>
 
       {/* Today's Appointments - Clean list view */}

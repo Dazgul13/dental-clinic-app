@@ -181,8 +181,6 @@ const seedData = async () => {
     
     console.log('✅ Seed data created successfully!');
     console.log('🏢 Organization: Demo Dental Clinic (slug: demo-dental-clinic)');
-    console.log('👤 Admin user: admin / Admin123!');
-    console.log('👤 Staff user: staff / Staff123!');
     console.log(`👥 Created ${patients.length} sample patients`);
     console.log(`📅 Created ${appointments.length} sample appointments`);
     

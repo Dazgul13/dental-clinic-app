@@ -9,11 +9,13 @@ import Dashboard from './pages/Dashboard';
 import PatientList from './pages/PatientList';
 import PatientDetails from './pages/PatientDetails';
 import Schedule from './pages/Schedule';
+import PendingTreatments from './pages/PendingTreatments';
 import ChangePassword from './pages/ChangePassword';
 import AccountSettings from './pages/AccountSettings';
 import SysAdminLogin from './pages/SysAdminLogin';
 import SysAdminDashboard from './pages/SysAdminDashboard';
 import Layout from './components/Layout';
+import ComponentLibrary from './pages/ComponentLibrary';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -53,6 +55,7 @@ function App() {
           <Route path="patients" element={<PatientList />} />
           <Route path="patients/:id" element={<PatientDetails />} />
           <Route path="schedule" element={<Schedule />} />
+          <Route path="pending-treatments" element={<PendingTreatments />} />
           <Route path="account-settings" element={<AccountSettings />} />
           <Route path="change-password" element={<ChangePassword />} />
         </Route>
@@ -63,6 +66,9 @@ function App() {
         {/* System Admin Routes */}
         <Route path="/sys-admin/login" element={<SysAdminLogin />} />
         <Route path="/sys-admin/organizations" element={<SysAdminDashboard />} />
+        {import.meta.env.MODE !== 'production' && (
+          <Route path="/dev/components" element={<ComponentLibrary />} />
+        )}
       </Routes>
     </Router>
   );

@@ -186,9 +186,10 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
           </form>
         )}
 
-        {/* Treatment Plans Table - No horizontal scrollbar */}
-        <div>
-          <table className="w-full divide-y divide-gray-200 table-auto">
+        {/* Treatment Plans - table on md+, stacked cards on small screens (no horizontal scroll) */}
+        <div className="hidden md:block">
+          <div className="overflow-x-auto">
+            <table className="w-full divide-y divide-gray-200 table-auto">
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-3 sm:px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -300,7 +301,43 @@ const TreatmentPlanList = ({ patientId, treatments, onUpdateStatus }) => {
                 </tr>
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
+        </div>
+
+        {/* Small screens: stacked responsive cards */}
+        <div className="md:hidden space-y-3">
+          {treatments.length > 0 ? (
+            treatments.map((plan) => (
+              <div key={`${plan.patientId}-${plan._id}`} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{plan.procedure}</div>
+                    <div className="mt-1 text-xs text-gray-600 flex flex-wrap gap-2">
+                      {plan.toothNumber ? <span className="px-2 py-0.5 rounded bg-gray-100 text-xs">{plan.toothNumber}</span> : <span className="text-gray-400">Full arch</span>}
+                      {plan.surface && <span className="px-2 py-0.5 rounded bg-blue-50 text-xs">{plan.surface}</span>}
+                    </div>
+                    <div className="mt-2 text-sm font-semibold">{plan.cost ? `₱${plan.cost.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}</div>
+                    <div className="mt-1 text-xs text-gray-500">Created: {formatDate(plan.createdAt)}</div>
+                  </div>
+                  <div className="ml-2 text-right">
+                    <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(plan.status)}`}>{plan.status}</div>
+                    <div className="mt-2 space-x-1">
+                      {plan.status === 'Proposed' && (
+                        <button onClick={() => handleUpdateStatus(plan._id, 'In Progress')} disabled={updating === plan._id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 disabled:opacity-50">Start</button>
+                      )}
+                      {plan.status === 'In Progress' && (
+                        <button onClick={() => handleUpdateStatus(plan._id, 'Completed')} disabled={updating === plan._id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 disabled:opacity-50">Complete</button>
+                      )}
+                      <button onClick={() => handleUpdateStatus(plan._id, 'Cancelled')} disabled={updating === plan._id} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50">Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center text-gray-500">No treatment plans</div>
+          )}
         </div>
       </div>
     </div>

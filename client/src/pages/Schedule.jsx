@@ -399,7 +399,11 @@ const Schedule = () => {
                     </div>
                     <div className="space-y-1">
                       {dayAppointments.slice(0, 3).map((appointment) => (
-                        <div key={`${appointment._id}-0`} className="px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded">
+                        <div
+                          key={`${appointment._id}-0`}
+                          onClick={() => appointment.patientId?._id && navigate(`/dashboard/patients/${appointment.patientId._id}?tab=treatment`)}
+                          className="px-2 py-1 bg-teal-50 text-teal-800 text-xs rounded cursor-pointer hover:bg-teal-100 transition"
+                        >
                           {appointment.patientId?.firstName?.[0]}{appointment.patientId?.lastName?.[0]} {formatTime(appointment.date)}
                         </div>
                       ))}
@@ -453,8 +457,8 @@ const Schedule = () => {
                       </div>
                       <div>
                         <p className="text-base font-medium text-navy-900">{appointment.patientId?.firstName} {appointment.patientId?.lastName}</p>
-                        <p className="text-sm text-gray-600">{formatTime(appointment.date)} • Dr. {appointment.dentistId?.username}</p>
-                        <p className="text-sm text-gray-500">{appointment.patientId?.phone} • {appointment.patientId?.email}</p>
+                        <p className="text-sm text-gray-600">{formatTime(appointment.date)} ï¿½ Dr. {appointment.dentistId?.username}</p>
+                        <p className="text-sm text-gray-500">{appointment.patientId?.phone} ï¿½ {appointment.patientId?.email}</p>
                       </div>
                     </div>
                     <select

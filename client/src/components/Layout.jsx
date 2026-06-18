@@ -34,6 +34,16 @@ const navLinks = [
     ),
   },
   {
+    to: '/dashboard/pending-treatments',
+    label: 'Pending Treatments',
+    end: false,
+    icon: (
+      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6M9 16h6M5 6h14M5 20h14" />
+      </svg>
+    ),
+  },
+  {
     to: '/dashboard/account-settings',
     label: 'Settings',
     end: false,

@@ -3,6 +3,7 @@
 // SECURITY: no public org listing — slug must be known
 
 import { useState } from 'react';
+import Button from '../components/ui/Button'
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +20,7 @@ const inputCls =
 const Login = () => {
   const [username,     setUsername]     = useState('');
   const [password,     setPassword]     = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error,        setError]        = useState('');
   const [loading,      setLoading]      = useState(false);
   const [clinicSlug,   setClinicSlug]   = useState('');
@@ -280,27 +282,30 @@ const Login = () => {
                   <label htmlFor="password" className="block text-sm font-medium mb-1.5" style={{ color: '#6B5C52' }}>
                     Password
                   </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputCls}
-                    placeholder="Enter your password"
-                  />
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={inputCls}
+                      placeholder="Enter your password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`} />
+                    </button>
+                  </div>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 px-4 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  style={{ backgroundColor: '#2A9D8F', marginTop: 8 }}
-                  onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#1B7A6E'; }}
-                  onMouseLeave={e => e.currentTarget.style.backgroundColor = '#2A9D8F'}
-                >
+                <Button variant="primary" type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2">
                   {loading ? (
                     <>
                       <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -310,7 +315,7 @@ const Login = () => {
                       Signing in…
                     </>
                   ) : 'Sign In'}
-                </button>
+                </Button>
               </form>
             )}
           </div>
