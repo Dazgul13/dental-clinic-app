@@ -160,15 +160,7 @@ App runs at `http://localhost:5173`.
 node server/seed.js
 ```
 
-Credentials are printed to the console after seeding.
 
-| Field | Value |
-|---|---|
-| Clinic slug | `demo-dental-clinic` |
-| Admin username | `admin` |
-| Admin password | `Admin123!` |
-| Staff username | `staff` |
-| Staff password | `Staff123!` |
 
 > Change these immediately after first login.
 
